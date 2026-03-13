@@ -1,0 +1,47 @@
+{
+    "expo": {
+        "name": "RAGnosis",
+        "slug": "ragnosis",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "userInterfaceStyle": "dark",
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.ragnosis.mobile"
+        },
+        "android": {
+            "package": "com.ragnosis.mobile",
+            "targetSdkVersion": 34,
+            "minSdkVersion": 24,
+            "permissions": [
+                "READ_EXTERNAL_STORAGE",
+                "WRITE_EXTERNAL_STORAGE",
+                "CAMERA",
+                "RECEIVE_BOOT_COMPLETED",
+                "VIBRATE",
+                "SCHEDULE_EXACT_ALARM",
+                "USE_EXACT_ALARM",
+                "POST_NOTIFICATIONS"
+            ]
+        },
+        "plugins": [
+            [
+                "expo-document-picker"
+            ],
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "Allow RAGnosis to access your photos to upload medical reports.",
+                    "cameraPermission": "Allow RAGnosis to use the camera to scan medical reports."
+                }
+            ],
+            [
+                "expo-notifications",
+                {
+                    "androidMode": "default",
+                    "androidCollapsedTitle": "RAGnosis Reminder"
+                }
+            ]
+        ]
+    }
+}

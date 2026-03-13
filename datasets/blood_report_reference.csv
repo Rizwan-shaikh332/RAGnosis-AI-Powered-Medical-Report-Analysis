@@ -1,0 +1,35 @@
+test_name,abbreviation,normal_min,normal_max,unit,category,low_interpretation,high_interpretation
+Hemoglobin (Male),HGB-M,13.5,17.5,g/dL,CBC,Anemia - may cause fatigue and weakness,Polycythemia - may indicate dehydration or bone marrow disorder
+Hemoglobin (Female),HGB-F,12.0,15.5,g/dL,CBC,Anemia - may cause fatigue and weakness,Polycythemia - may indicate dehydration or bone marrow disorder
+White Blood Cells,WBC,4.5,11.0,10^3/µL,CBC,Leukopenia - may indicate viral infection or immune disorder,Leukocytosis - may indicate bacterial infection or inflammation
+Red Blood Cells (Male),RBC-M,4.5,5.5,10^6/µL,CBC,Anemia or blood loss,Polycythemia or dehydration
+Red Blood Cells (Female),RBC-F,4.0,5.0,10^6/µL,CBC,Anemia or blood loss,Polycythemia or dehydration
+Platelets,PLT,150,400,10^3/µL,CBC,Thrombocytopenia - bleeding risk,Thrombocytosis - clotting risk
+Hematocrit (Male),HCT-M,41,53,%,CBC,Anemia,Polycythemia
+Hematocrit (Female),HCT-F,36,46,%,CBC,Anemia,Polycythemia
+Mean Corpuscular Volume,MCV,80,100,fL,CBC,Microcytic anemia - iron deficiency,Macrocytic anemia - B12/folate deficiency
+Fasting Blood Glucose,FBG,70,100,mg/dL,Diabetes,Hypoglycemia - risk of low blood sugar symptoms,Hyperglycemia - prediabetes or diabetes
+HbA1c,HBA1C,4.0,5.6,%,Diabetes,Normal glycemic control,Prediabetes (5.7-6.4%) or Diabetes (6.5%+)
+Total Cholesterol,TC,0,200,mg/dL,Lipids,No lower concern,High cardiovascular risk
+HDL Cholesterol,HDL,60,999,mg/dL,Lipids,Low HDL - increased heart disease risk,No upper concern
+LDL Cholesterol,LDL,0,100,mg/dL,Lipids,No lower concern,High LDL - increased atherosclerosis risk
+Triglycerides,TG,0,150,mg/dL,Lipids,No lower concern,High triglycerides - heart and pancreas risk
+Serum Creatinine (Male),CREAT-M,0.7,1.2,mg/dL,Kidney,No lower concern,Elevated - kidney function impairment
+Serum Creatinine (Female),CREAT-F,0.5,1.0,mg/dL,Kidney,No lower concern,Elevated - kidney function impairment
+Blood Urea Nitrogen,BUN,7,20,mg/dL,Kidney,Malnutrition or liver failure,Kidney dysfunction or dehydration
+eGFR,EGFR,90,9999,mL/min/1.73m2,Kidney,Reduced - CKD stage based on level,No upper concern
+SGPT/ALT,ALT,7,56,U/L,Liver,No lower concern,Liver damage or inflammation
+SGOT/AST,AST,10,40,U/L,Liver,No lower concern,Liver damage or muscle injury
+Total Bilirubin,TBIL,0.2,1.2,mg/dL,Liver,No lower concern,Jaundice - liver or bile duct issue
+Alkaline Phosphatase,ALP,44,147,U/L,Liver,No lower concern,Liver disease or bone disorder
+TSH,TSH,0.4,4.0,mIU/L,Thyroid,Hyperthyroidism - overactive thyroid,Hypothyroidism - underactive thyroid
+Free T4,FT4,0.8,1.8,ng/dL,Thyroid,Hypothyroidism,Hyperthyroidism
+Free T3,FT3,2.3,4.1,pg/mL,Thyroid,Hypothyroidism,Hyperthyroidism
+Uric Acid (Male),UA-M,3.4,7.0,mg/dL,Metabolic,No lower concern,Hyperuricemia - gout risk
+Uric Acid (Female),UA-F,2.4,6.0,mg/dL,Metabolic,No lower concern,Hyperuricemia - gout risk
+Serum Ferritin (Male),FERR-M,12,300,ng/mL,Iron Studies,Iron deficiency - even before anemia,Iron overload or chronic inflammation
+Serum Ferritin (Female),FERR-F,12,150,ng/mL,Iron Studies,Iron deficiency,Iron overload or chronic inflammation
+25-OH Vitamin D,VIT-D,30,100,ng/mL,Vitamins,Vitamin D deficiency - bone and immune impact,Vitamin D toxicity (rare)
+Vitamin B12,B12,200,900,pg/mL,Vitamins,B12 deficiency - neurological and anemia risk,No major concern
+Systolic Blood Pressure,SBP,90,120,mmHg,Vitals,Hypotension - dizziness and fainting risk,Hypertension - cardiovascular risk
+Diastolic Blood Pressure,DBP,60,80,mmHg,Vitals,Hypotension,Hypertension - target organ damage risk

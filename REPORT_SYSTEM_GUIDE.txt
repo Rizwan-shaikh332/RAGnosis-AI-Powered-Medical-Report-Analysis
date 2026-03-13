@@ -1,0 +1,170 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    RAGnosis — Report System Guide                          ║
+║               Written: 2026-03-08  |  Location: Project Root              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECTION 1 — SUPPORTED REPORT TYPES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You can upload the following types of medical lab reports in PDF, JPG, PNG,
+or JPEG format. The system auto-detects the report type from the text.
+
+┌─────────────────────────────────┬──────────────────────────────────────────┐
+│  Report Type                    │  Key Lab Values Extracted                │
+├─────────────────────────────────┼──────────────────────────────────────────┤
+│ Blood / CBC Report              │  Hemoglobin, WBC, RBC, Platelets         │
+│ (Complete Blood Count)          │  (e.g. after normalization: 7.8 k/µL)    │
+├─────────────────────────────────┼──────────────────────────────────────────┤
+│ Diabetes / Glucose Report       │  Fasting Blood Sugar (FBS), Random BS,   │
+│                                 │  HbA1c (if present)                      │
+├─────────────────────────────────┼──────────────────────────────────────────┤
+│ Lipid Panel Report              │  Total Cholesterol, Triglycerides,        │
+│                                 │  HDL (Good), LDL (Bad)                   │
+├─────────────────────────────────┼──────────────────────────────────────────┤
+│ Kidney Function Report          │  Creatinine, Urea / BUN, eGFR            │
+├─────────────────────────────────┼──────────────────────────────────────────┤
+│ Liver Function Report           │  SGPT (ALT), SGOT (AST), Bilirubin       │
+├─────────────────────────────────┼──────────────────────────────────────────┤
+│ Thyroid Report                  │  TSH, Free T3, Free T4                   │
+├─────────────────────────────────┼──────────────────────────────────────────┤
+│ Blood Pressure Record           │  Systolic BP, Diastolic BP               │
+├─────────────────────────────────┼──────────────────────────────────────────┤
+│ Radiology / Imaging Report      │  Text-only summary (X-Ray, MRI, CT Scan) │
+├─────────────────────────────────┼──────────────────────────────────────────┤
+│ General Medical Report          │  Any lab report not matching above types  │
+│                                 │  — still summarized via AI               │
+└─────────────────────────────────┴──────────────────────────────────────────┘
+
+File Formats Accepted:
+  • PDF  — best quality; text extracted via PyMuPDF (pdfplumber)
+  • JPG / JPEG / PNG  — text extracted via Tesseract OCR (pytesseract)
+
+NOTE: Handwritten reports are NOT supported. Printed/digital lab reports work
+best. Scanned images work if they are high resolution (≥ 150 DPI).
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECTION 2 — HOW THE DETAILED REPORT VIEW IS GENERATED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When you upload a report, RAGnosis goes through the following pipeline:
+
+  STEP 1 — TEXT EXTRACTION  (backend/services/text_extractor.py)
+  ──────────────────────────────────────────────────────────────
+  • PDF: The raw text is extracted page-by-page using pdfplumber.
+  • Image: The image is preprocessed and passed through Tesseract OCR.
+  • Result: A single string of raw text from the file.
+
+  STEP 2 — METRIC EXTRACTION  (text_extractor.py: extract_medical_metrics)
+  ──────────────────────────────────────────────────────────────────────────
+  The raw text is searched using three strategies:
+
+  Strategy 1 — Keyword + Separator:
+    Regex patterns look for known keywords followed by ":", "=", "|"
+    or whitespace then a number.
+    Example: "Hemoglobin : 11.2" → hemoglobin = 11.2
+
+  Strategy 2 — Table-Row Scan:
+    Each line of the text is checked for keywords.
+    The first number found on that line is taken as the value.
+    Example: "WBC Count   7,800   10^3/uL   4500-11000" → wbc = 7800
+
+  Strategy 3 — Unit Normalization:
+    CBC labs print raw cell counts (e.g. 7800 cells/µL).
+    The catalog expects k/µL (per thousand), so:
+      WBC:      > 100  →  divide by 1,000   (7800 → 7.8 k/µL)
+      Platelets: > 1000 → divide by 1,000   (220000 → 220 k/µL)
+      RBC:      > 20   →  divide by 1,000,000
+
+  STEP 3 — AI SUMMARIZATION  (backend/services/bert_summarizer.py)
+  ─────────────────────────────────────────────────────────────────
+  • The raw text is passed to a BERT-based extractive summarizer.
+  • It selects the most medically relevant sentences from the text.
+  • A simplified, plain-English summary is generated based on the
+    extracted metrics (e.g. "Hemoglobin is low: 11.2 g/dL ...").
+
+  STEP 4 — RECOMMENDATIONS  (bert_summarizer.py: build_recommendations)
+  ──────────────────────────────────────────────────────────────────────
+  For each extracted metric:
+  • Its value is compared against clinically validated normal ranges.
+  • Status is assigned: LOW / NORMAL / HIGH
+  • A structured recommendation object is created with:
+      - label, value, unit
+      - normal range (lo/hi)
+      - percentage position on visual range bar
+      - actionable tips (rule-based, not AI-generated)
+  This data is stored in MongoDB alongside the report.
+
+  STEP 5 — FRONTEND VISUALIZATION  (frontend/src/pages/Dashboard.jsx)
+  ────────────────────────────────────────────────────────────────────
+  The ReportDetailView component renders:
+
+  [A] STATUS BOXES (3 coloured boxes):
+      • ⬆️ Elevated (RED)   — values above normal
+      • ⚠️ Below Normal (YELLOW) — values below normal
+      • ✅ Normal (GREEN)   — values within reference range
+
+  [B] RANGE BARS (MetricBar component):
+      • Horizontal bar with a green "normal zone" band
+      • A glowing dot marker shows where your value sits
+      • Label: LOW ↓ / NORMAL ✓ / HIGH ↑
+
+  [C] RECOMMENDATIONS (RecommendationCard component):
+      • Expandable cards for each abnormal value
+      • Actionable tips (e.g. "eat iron-rich foods", "walk 30 min/day")
+      • Color-coded by severity
+
+  [D] DATA TABLE:
+      • All extracted parameters listed in a table
+      • Columns: Parameter | Your Value | Unit | Normal Range | Status
+
+  [E] AI SUMMARY:
+      • The plain-English summary from BERT shown below the visual section
+
+
+  FALLBACK BEHAVIOR (when metrics extraction fails):
+  ──────────────────────────────────────────────────
+  If the backend failed to extract metrics from a report (e.g. unusual PDF
+  formatting), the frontend automatically:
+  1. Runs parseSummaryForMetrics() on the stored AI Summary text.
+  2. Uses regex to find values mentioned inline in the summary
+     (e.g. "WBC Count 7,800 10^3/uL" → wbc = 7.8).
+  3. Feeds those parsed values into the same visual display pipeline.
+
+  This guarantees that EVERY report shows the full visual layout, even if the
+  backend regex did not extract metrics during upload.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECTION 3 — METRIC REFERENCE RANGES USED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Metric            Unit       Low (below)    High (above)
+  ─────────────────────────────────────────────────────────
+  Hemoglobin        g/dL       < 12            > 17
+  Blood Glucose     mg/dL      < 70            > 100
+  Total Cholesterol mg/dL      < 100           > 200
+  Triglycerides     mg/dL      < 0             > 150
+  HDL (Good Chol.)  mg/dL      < 60            > 999 (higher is better)
+  LDL (Bad Chol.)   mg/dL      < 0             > 100
+  WBC               k/µL       < 4.5           > 11
+  RBC               M/µL       < 4.0           > 5.5
+  Platelets         k/µL       < 150           > 400
+  Creatinine        mg/dL      < 0.5           > 1.2
+  Blood Urea (BUN)  mg/dL      < 7             > 20
+  SGPT (ALT)        U/L        < 7             > 56
+  SGOT (AST)        U/L        < 10            > 40
+  TSH (Thyroid)     mIU/L      < 0.4           > 4.0
+  Systolic BP       mmHg       < 90            > 120
+  Diastolic BP      mmHg       < 60            > 80
+
+  These ranges are hardcoded in:
+    Backend:  backend/services/bert_summarizer.py (METRIC_META dict)
+    Frontend: frontend/src/pages/Dashboard.jsx   (METRIC_CATALOG dict)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ END OF GUIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

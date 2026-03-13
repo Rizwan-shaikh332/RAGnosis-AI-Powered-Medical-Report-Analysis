@@ -1,0 +1,16 @@
+{
+  "name": "ragnosis",
+  "version": "1.0.0",
+  "description": "RAGnosis - AI-Powered Medical Report Analysis",
+  "private": true,
+  "workspaces": [
+    "android",
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "mobile": "cd android && npx expo start",
+    "web": "cd frontend && npm start",
+    "backend": "cd backend && python app.py"
+  }
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "question": "What is hemoglobin and what are its normal levels?",
+    "answer": "Hemoglobin is a protein in red blood cells that carries oxygen throughout the body. Normal levels are 13.5–17.5 g/dL for men and 12.0–15.5 g/dL for women. Low hemoglobin (anemia) causes fatigue, weakness, and shortness of breath.",
+    "category": "Blood Tests",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What does a high white blood cell count mean?",
+    "answer": "A high WBC count (leukocytosis) above 11,000 cells/µL may indicate infection, inflammation, immune disorder, or rarely leukemia. Normal WBC range is 4,500–11,000 cells/µL. A doctor should evaluate the cause.",
+    "category": "Blood Tests",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What is a normal blood glucose level?",
+    "answer": "Fasting blood glucose: Normal is 70–100 mg/dL. Prediabetes: 100–125 mg/dL. Diabetes: 126 mg/dL or higher. Postprandial (2 hours after eating): Normal below 140 mg/dL. HbA1c below 5.7% is normal; 5.7–6.4% is prediabetes.",
+    "category": "Diabetes",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What does cholesterol level tell us?",
+    "answer": "Total cholesterol below 200 mg/dL is desirable. 200–239 mg/dL is borderline high. Above 240 mg/dL is high risk. HDL (good cholesterol) should be above 60 mg/dL. LDL (bad cholesterol) should be below 100 mg/dL. High LDL increases heart disease risk.",
+    "category": "Cardiology",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What are normal kidney function test values?",
+    "answer": "Serum creatinine: Men 0.7–1.2 mg/dL, Women 0.5–1.0 mg/dL. Blood Urea Nitrogen (BUN): 7–20 mg/dL. GFR above 90 mL/min/1.73m² is normal. Elevated creatinine and BUN suggest kidney dysfunction.",
+    "category": "Kidney",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What are liver function test normal ranges?",
+    "answer": "SGPT (ALT): 7–56 U/L. SGOT (AST): 10–40 U/L. Total Bilirubin: 0.2–1.2 mg/dL. Alkaline Phosphatase: 44–147 U/L. Elevated liver enzymes may suggest liver damage, hepatitis, or fatty liver disease.",
+    "category": "Liver",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What does TSH level indicate for thyroid health?",
+    "answer": "TSH (Thyroid Stimulating Hormone) normal range: 0.4–4.0 mIU/L. Low TSH indicates hyperthyroidism (overactive thyroid) — symptoms include weight loss, rapid heartbeat, anxiety. High TSH indicates hypothyroidism (underactive thyroid) — symptoms include fatigue, weight gain, cold sensitivity.",
+    "category": "Thyroid",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What is a normal platelet count?",
+    "answer": "Normal platelet count: 150,000–400,000 per µL. Low platelets (thrombocytopenia) below 150,000 increases bleeding risk. High platelets (thrombocytosis) above 400,000 may indicate inflammation or bone marrow disorder.",
+    "category": "Blood Tests",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What does anemia mean in a blood report?",
+    "answer": "Anemia is when your red blood cells or hemoglobin level is too low, reducing oxygen delivery to your body. Symptoms: fatigue, weakness, pale skin, shortness of breath. Types include iron deficiency anemia, vitamin B12 deficiency anemia, and sickle cell anemia.",
+    "category": "Blood Tests",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What are normal triglyceride levels?",
+    "answer": "Normal triglycerides: below 150 mg/dL. Borderline high: 150–199 mg/dL. High: 200–499 mg/dL. Very high: above 500 mg/dL. High triglycerides increase risk of heart disease and pancreatitis. Diet, exercise, and medications can help.",
+    "category": "Cardiology",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What does RBC count mean?",
+    "answer": "Red Blood Cell (RBC) count measures the number of red blood cells. Normal range: Men 4.5–5.5 million cells/µL, Women 4.0–5.0 million cells/µL. Low RBC indicates anemia. High RBC may indicate polycythemia or dehydration.",
+    "category": "Blood Tests",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What is HbA1c and why is it important?",
+    "answer": "HbA1c (glycated hemoglobin) measures average blood sugar over 2–3 months. Normal: below 5.7%. Prediabetes: 5.7–6.4%. Diabetes: 6.5% and above. It helps diagnose and monitor diabetes management without fasting.",
+    "category": "Diabetes",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What does high creatinine in blood test mean?",
+    "answer": "High serum creatinine indicates reduced kidney function. The kidneys filter creatinine; when they're not working well, levels rise. Causes include dehydration, kidney disease, certain medications, or high protein diet. A GFR test helps assess kidney function severity.",
+    "category": "Kidney",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "How to interpret a lipid panel report?",
+    "answer": "A lipid panel measures: Total cholesterol (goal <200 mg/dL), LDL 'bad' cholesterol (goal <100 mg/dL), HDL 'good' cholesterol (goal >60 mg/dL), Triglycerides (goal <150 mg/dL). High LDL and low HDL increase cardiovascular disease risk.",
+    "category": "Cardiology",
+    "source": "MedQuAD"
+  },
+  {
+    "question": "What is normal blood pressure?",
+    "answer": "Normal blood pressure: below 120/80 mmHg. Elevated: 120–129 systolic and <80 diastolic. Stage 1 hypertension: 130–139/80–89 mmHg. Stage 2 hypertension: 140+/90+ mmHg. Hypertensive crisis: above 180/120 mmHg — seek emergency care.",
+    "category": "Cardiology",
+    "source": "MedQuAD"
+  }
+]
