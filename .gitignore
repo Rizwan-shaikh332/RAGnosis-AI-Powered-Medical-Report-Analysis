@@ -1,131 +1,193 @@
-# ------------------------------
-# OS / editor cruft
-# ------------------------------
-.DS_Store
-Thumbs.db
-Desktop.ini
-*.swp
-*.swo
-*~
-.vscode/
-.idea/
+# ═══════════════════════════════════════════════
+#  RAGnosis .gitignore
+#  Covers: Python, Flask, React/Vite, Node.js,
+#          MongoDB, ML models, OS & IDE files
+# ═══════════════════════════════════════════════
 
-# ------------------------------
-# Environment / secrets
-# ------------------------------
-.env
-.env.*
-!.env.example
-!.env.template
-backend/.env
-!**/.env.example
-!**/.env.template
-backend/.env.*
-!backend/.env.template
 
-# ------------------------------
-# Python
-# ------------------------------
+# ─── Python ──────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
 *.pyo
 *.pyd
-.python-version
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.pyre/
-.hypothesis/
-.tox/
-.nox/
-.coverage
-.coverage.*
-htmlcov/
-.eggs/
-*.egg-info/
-pip-wheel-metadata/
-site/
-.venv/
+*.pyc
+
+# Virtual environments
 venv/
-ENV/
+.venv/
 env/
-backend/venv/
+ENV/
+.env/
+Lib/
+Include/
+Scripts/
+pyvenv.cfg
 
-# Jupyter
-.ipynb_checkpoints/
-
-# ------------------------------
-# Node / JavaScript
-# ------------------------------
-node_modules/
-.npm/
-.pnpm-store/
-.yarn/
-.yarn/cache/
-.yarn/unplugged/
-.yarn/build-state.yml
-.yarn/install-state.gz
-
-# Build / coverage outputs
-coverage/
+# Python packaging
+*.egg
+*.egg-info/
 dist/
 build/
-.out/
-.tmp/
-temp/
-cache/
-*.tsbuildinfo
-vite.svg
-frontend/dist/
+*.whl
+site-packages/
 
-# ------------------------------
-# React Native / Expo
-# ------------------------------
-.expo/
-.expo-shared/
-android/.expo/
-android/.expo-shared/
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.log
+
+# mypy / type checking
+.mypy_cache/
+.dmypy.json
+
+
+# ─── Environment & Secrets ───────────────────
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+*.env
+
+# Keep the template (safe to commit)
+!.env.template
+!.env.example
+
+
+# ─── Flask / Backend ─────────────────────────
+backend/uploads/
+backend/venv/
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/instance/
+backend/*.db
+backend/*.sqlite3
+
+
+# ─── ML Models & FAISS Index ─────────────────
+# FAISS index files (large binary files, built locally)
+models/faiss_index/
+*.faiss
+*.index
+*.bin
+
+# HuggingFace model cache (auto-downloaded)
+# (These can be 1–4 GB each, never commit)
+*.safetensors
+*.h5
+*.pkl
+*.joblib
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+
+# ─── Node.js / React / Vite ──────────────────
+node_modules/
+frontend/node_modules/
+
+# Vite build output
+frontend/dist/
+frontend/build/
+dist/
+
+# Vite cache
+frontend/.vite/
+.vite/
+
+# npm/yarn lock files (keep package-lock.json if used)
+# yarn.lock
+# pnpm-lock.yaml
+
+# Storybook
+storybook-static/
+
+
+# ─── Android / Expo ──────────────────────────
 android/.gradle/
 android/build/
 android/app/build/
-android/.metro-health-check*
-android/web-build/
+android/.idea/
+android/local.properties
+android/*.keystore
+android/*.jks
+*.apk
+*.aab
 
-# Metro / bundler logs
-metro-log*.txt
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# Expo
+.expo/
+.expo-shared/
 
-# ------------------------------
-# Runtime app data
-# ------------------------------
-backend/uploads/*
-!backend/uploads/.gitkeep
-*.log
-logs/
 
-# ------------------------------
-# Model / ML artifacts
-# ------------------------------
-*.ckpt
-*.pt
-*.pth
-*.bin
-*.onnx
-*.joblib
-*.pkl
-*.pickle
-*.faiss
-*.index
+# ─── MongoDB / Database ──────────────────────
+*.bson
+mongodump/
+mongoexport/
 
-# ------------------------------
-# Local databases / temp files
-# ------------------------------
-*.sqlite
-*.sqlite3
-*.db
+
+# ─── Uploaded Reports (user data, never commit) ──
+uploads/
+backend/uploads/
+sample_reports/
+*.pdf
+*.PDF
+
+
+# ─── OS Files ────────────────────────────────
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+
+
+# ─── IDE & Editor ────────────────────────────
+# VSCode
+.vscode/*
+!.vscode/extensions.json
+
+# JetBrains (PyCharm, WebStorm)
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+*.orig
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+
+# ─── Misc ────────────────────────────────────
 *.tmp
 *.temp
+*.cache
+*.bak
+*.backup
+*.log
+logs/

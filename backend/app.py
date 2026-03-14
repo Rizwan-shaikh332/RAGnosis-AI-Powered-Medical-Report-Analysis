@@ -29,11 +29,13 @@ def create_app():
     from routes.reports import reports_bp
     from routes.chatbot import chatbot_bp
     from routes.reminders import reminders_bp
+    from routes.hospital import hospital_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(reports_bp, url_prefix="/api/reports")
     app.register_blueprint(chatbot_bp, url_prefix="/api/chat")
     app.register_blueprint(reminders_bp, url_prefix="/api/reminders")
+    app.register_blueprint(hospital_bp, url_prefix="/api/hospital")
 
     @app.route("/api/health")
     def health():

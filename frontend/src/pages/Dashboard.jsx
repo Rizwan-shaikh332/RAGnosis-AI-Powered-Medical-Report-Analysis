@@ -525,9 +525,90 @@ const NAV = [
     { key: 'reports', icon: '📋', label: 'My Reports' },
     { key: 'metrics', icon: '📊', label: 'Health Metrics' },
     { key: 'reminders', icon: '💊', label: 'Medicine Reminders' },
+    { key: 'prescriptions', icon: '🩺', label: 'Prescriptions' },
     { key: 'chatbot', icon: '🤖', label: 'AI Chatbot' },
     { key: 'profile', icon: '👤', label: 'My Profile' },
 ]
+
+// ══════════════════════════════════════════════════════════
+//  PRESCRIPTIONS TAB
+// ══════════════════════════════════════════════════════════
+function PrescriptionsTab() {
+    const [prescriptions, setPrescriptions] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        axios.get('/api/hospital/prescriptions/me')
+            .then(res => setPrescriptions(res.data.prescriptions || []))
+            .catch(() => toast.error('Could not load prescriptions'))
+            .finally(() => setLoading(false))
+    }, [])
+
+    if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div className="spinner" /></div>
+
+    if (prescriptions.length === 0) {
+        return (
+            <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: '3rem', marginBottom: 12 }}>🩺</div>
+                <p>No prescriptions yet. Your doctor's prescriptions will appear here.</p>
+            </div>
+        )
+    }
+
+    return (
+        <div>
+            <h2 style={{ fontWeight: 800, marginBottom: 24, fontSize: '1.5rem' }}>🩺 My Prescriptions ({prescriptions.length})</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                {prescriptions.map(px => (
+                    <motion.div key={px._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: 24 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+                            <div>
+                                <div style={{ fontWeight: 800, fontSize: '1rem' }}>Dr. {px.doctor_name}</div>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{px.doctor_specialization || 'Doctor'} · {new Date(px.created_at?.$date || px.created_at).toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</div>
+                            </div>
+                            <span className="badge badge-cyan">{(px.medicines || []).length} medicine{(px.medicines || []).length !== 1 ? 's' : ''}</span>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {(px.medicines || []).map((m, i) => (
+                                <div key={i} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 10, padding: '12px 14px', background: 'var(--bg-secondary)', borderRadius: 14, border: '1px solid rgba(0,212,170,0.15)' }}>
+                                    <div>
+                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>💊 Medicine</div>
+                                        <div style={{ fontWeight: 800, color: 'var(--accent-cyan)', fontSize: '0.92rem' }}>{m.name}</div>
+                                    </div>
+                                    {m.dosage && <div>
+                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Dosage</div>
+                                        <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{m.dosage}</div>
+                                    </div>}
+                                    {m.frequency && <div>
+                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Frequency</div>
+                                        <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{m.frequency}</div>
+                                    </div>}
+                                    {m.duration && <div>
+                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Duration</div>
+                                        <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{m.duration}</div>
+                                    </div>}
+                                    {m.instructions && <div style={{ gridColumn: '1 / -1' }}>
+                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Instructions</div>
+                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{m.instructions}</div>
+                                    </div>}
+                                </div>
+                            ))}
+                        </div>
+
+                        {px.notes && (
+                            <div style={{ marginTop: 14, padding: '10px 14px', background: 'rgba(124,58,237,0.08)', borderRadius: 10, border: '1px solid rgba(124,58,237,0.2)' }}>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📝 Doctor's Notes: </span>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{px.notes}</span>
+                            </div>
+                        )}
+                    </motion.div>
+                ))}
+            </div>
+        </div>
+    )
+}
 
 // ── Metric status helper ──
 function metricStatus(key, value) {
@@ -1111,7 +1192,8 @@ export default function Dashboard() {
     useEffect(() => { fetchReports() }, [fetchReports])
 
     const renderContent = () => {
-        if (loadingReports && activeTab !== 'upload') {
+        const REPORT_TABS = ['overview', 'reports', 'report-detail', 'metrics']
+        if (loadingReports && REPORT_TABS.includes(activeTab)) {
             return <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div className="spinner" /></div>
         }
         switch (activeTab) {
@@ -1135,6 +1217,7 @@ export default function Dashboard() {
                 ) : null
             case 'metrics': return <MetricsTab reports={reports} />
             case 'reminders': return <MedicineRemindersTab />
+            case 'prescriptions': return <PrescriptionsTab />
             case 'chatbot': return <ChatbotTab reports={reports} />
             case 'profile': return <ProfileTab user={user} />
             default: return null
