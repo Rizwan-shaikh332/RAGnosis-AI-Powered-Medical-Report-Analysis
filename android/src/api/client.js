@@ -6,7 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 //  If using Android emulator:  http://10.0.2.2:5000
 //  If using Expo Go on Wi-Fi:  http://<YOUR_LAN_IP>:5000  (e.g. 192.168.1.5)
 // ─────────────────────────────────────────────────────────────────────────────
-export const BASE_URL = 'http://10.0.2.2:5000';
+export const BASE_URL = 'http://172.20.10.7:5000';
 
 const api = axios.create({
     baseURL: `${BASE_URL}/api`,

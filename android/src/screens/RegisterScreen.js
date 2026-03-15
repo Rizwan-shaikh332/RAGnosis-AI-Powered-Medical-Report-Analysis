@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
     ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform
@@ -6,10 +6,11 @@ import {
 import * as SecureStore from 'expo-secure-store';
 import api from '../api/client';
 import { COLORS } from '../constants/theme';
+import { AuthContext } from '../../App';
 
 const GENDERS = ['Male', 'Female', 'Other'];
 
-export default function RegisterScreen({ navigation, route }) {
+export default function RegisterScreen({ navigation }) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [mobile, setMobile] = useState('');
@@ -18,7 +19,7 @@ export default function RegisterScreen({ navigation, route }) {
     const [heightInches, setHeightInches] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const onLogin = route.params?.onLogin;
+    const { setLoggedIn } = useContext(AuthContext);
 
     const handleRegister = async () => {
         if (!name.trim() || !email.trim() || !password || !mobile.trim() || !age || !gender || !heightInches) {
@@ -41,7 +42,7 @@ export default function RegisterScreen({ navigation, route }) {
             await SecureStore.setItemAsync('user_name', name.trim());
             await SecureStore.setItemAsync('user_email', email.trim());
             await SecureStore.setItemAsync('user_id', res.data.user?.id || '');
-            onLogin?.();
+            setLoggedIn(true);
         } catch (err) {
             Alert.alert('Registration Failed', err.response?.data?.error || 'Please try again');
         } finally {
@@ -109,7 +110,7 @@ export default function RegisterScreen({ navigation, route }) {
                         {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>Create Account</Text>}
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={s.secondaryBtn} onPress={() => navigation.navigate('Login', { onLogin })}>
+                    <TouchableOpacity style={s.secondaryBtn} onPress={() => navigation.navigate('Login')}>
                         <Text style={s.secondaryText}>Already have an account? <Text style={{ color: COLORS.primary }}>Login</Text></Text>
                     </TouchableOpacity>
                 </View>

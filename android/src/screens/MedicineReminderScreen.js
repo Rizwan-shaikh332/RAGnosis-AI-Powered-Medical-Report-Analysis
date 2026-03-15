@@ -9,14 +9,7 @@ import * as Notifications from 'expo-notifications';
 import api from '../api/client';
 import { COLORS } from '../constants/theme';
 
-// ── Notification configuration ────────────────────────────────────────────────
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
-    }),
-});
+// Note: Notifications.setNotificationHandler is already configured in App.js
 
 async function requestNotificationPermissions() {
     const { status: existing } = await Notifications.getPermissionsAsync();

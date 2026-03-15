@@ -1,3 +1,20 @@
+# ─── httpx compatibility patch ──────────────────────────────────────────────
+# groq SDK passes `proxies` to httpx.Client, which was removed in httpx 0.28+.
+# This patch strips the argument before __init__ runs, making it version-safe.
+import httpx as _httpx
+_orig_client_init = _httpx.Client.__init__
+def _patched_client_init(self, *args, **kwargs):
+    kwargs.pop('proxies', None)
+    _orig_client_init(self, *args, **kwargs)
+_httpx.Client.__init__ = _patched_client_init
+
+_orig_async_init = _httpx.AsyncClient.__init__
+def _patched_async_init(self, *args, **kwargs):
+    kwargs.pop('proxies', None)
+    _orig_async_init(self, *args, **kwargs)
+_httpx.AsyncClient.__init__ = _patched_async_init
+# ─────────────────────────────────────────────────────────────────────────────
+
 from groq import Groq
 from config import Config
 from services.rag_engine import retrieve_context
@@ -64,7 +81,7 @@ def get_chatbot_response(user_message: str, report_text: str = "", chat_history:
             model=Config.GROQ_MODEL,
             messages=messages,
             max_tokens=1024,
-            temperature=0.3,  # Lower temp for medical accuracy
+            temperature=0.3,
         )
         return response.choices[0].message.content
     except Exception as e:

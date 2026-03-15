@@ -75,8 +75,9 @@ def create_app():
 if __name__ == "__main__":
     app = create_app()
     print("[CORS] Allowing cross-origin requests from: http://localhost:5173, http://localhost:3000")
-    print("[SERVER] Starting on http://127.0.0.1:5000")
+    print("[SERVER] Starting on 0.0.0.0:5000 (accessible on LAN at 172.20.10.7:5000)")
     app.run(
+        host='0.0.0.0',      # Listen on all interfaces so phone can connect over WiFi
         debug=True,
         port=5000,
         threaded=True,       # Allow concurrent requests (fixes ECONNRESET on long uploads)

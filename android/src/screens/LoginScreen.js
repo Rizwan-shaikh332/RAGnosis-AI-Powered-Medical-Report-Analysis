@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
     ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform
@@ -6,12 +6,13 @@ import {
 import * as SecureStore from 'expo-secure-store';
 import api from '../api/client';
 import { COLORS } from '../constants/theme';
+import { AuthContext } from '../../App';
 
-export default function LoginScreen({ navigation, route }) {
+export default function LoginScreen({ navigation }) {
     const [identifier, setIdentifier] = useState(''); // email or mobile
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const onLogin = route.params?.onLogin;
+    const { setLoggedIn } = useContext(AuthContext);
 
     const handleLogin = async () => {
         if (!identifier.trim() || !password) { Alert.alert('Error', 'Please fill all fields'); return; }
@@ -23,7 +24,7 @@ export default function LoginScreen({ navigation, route }) {
             await SecureStore.setItemAsync('user_id', res.data.user?.id || '');
             await SecureStore.setItemAsync('user_name', res.data.user?.name || 'User');
             await SecureStore.setItemAsync('user_email', res.data.user?.email || '');
-            onLogin?.();
+            setLoggedIn(true);
         } catch (err) {
             Alert.alert('Login Failed', err.response?.data?.error || 'Check credentials and try again');
         } finally {
@@ -57,7 +58,7 @@ export default function LoginScreen({ navigation, route }) {
                         {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>Login</Text>}
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={s.secondaryBtn} onPress={() => navigation.navigate('Register', { onLogin })}>
+                    <TouchableOpacity style={s.secondaryBtn} onPress={() => navigation.navigate('Register')}>
                         <Text style={s.secondaryText}>Don't have an account? <Text style={{ color: COLORS.primary }}>Register</Text></Text>
                     </TouchableOpacity>
                 </View>

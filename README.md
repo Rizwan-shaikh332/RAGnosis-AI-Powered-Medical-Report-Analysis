@@ -210,6 +210,66 @@ In the Patient Dashboard, two new sections appear:
 
 ---
 
+## 📱 Android Mobile App (Expo Go)
+
+RAGnosis also has a **React Native mobile app** built with Expo SDK 51, accessible via the **Expo Go** app on Android.
+
+### Mobile App Screens
+
+| Screen | Tab Icon | Description |
+|--------|----------|-------------|
+| **Overview** | 🏠 | Dashboard summary — latest report, quick stats |
+| **Upload** | ☁️ | Upload blood reports from phone gallery or camera |
+| **Reports** | 📄 | List of all reports with AI summaries |
+| **Chat** | 💬 | AI chatbot using Groq + RAG, asks about your reports |
+| **Reminders** | ⏰ | Medicine reminders with local push notifications |
+| **Profile** | 👤 | User profile and account info |
+
+### Mobile Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | React Native + Expo SDK 51 |
+| **Navigation** | React Navigation v7 (Stack + Bottom Tabs) |
+| **Auth Storage** | `expo-secure-store` (encrypted JWT storage) |
+| **File Upload** | `expo-document-picker` + `expo-image-picker` |
+| **Notifications** | `expo-notifications` (local daily reminders) |
+| **HTTP** | Axios → same Flask backend at port 5000 |
+
+### How to Run the Mobile App
+
+> ⚠️ **IMPORTANT**: Do NOT press `a` in the terminal — that requires a USB cable + Android Studio. Instead, **scan the QR code** with Expo Go!
+
+**Step 1 — Install Expo Go on your phone**  
+Download **Expo Go** from the [Google Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent) (version SDK 51 or higher)
+
+**Step 2 — Start the Expo dev server**
+```bash
+cd android
+npm install --legacy-peer-deps   # first time only
+npx expo start --clear
+```
+
+**Step 3 — Open on your phone**
+1. Open the **Expo Go** app on your Android phone
+2. Tap **"Scan QR Code"**
+3. Scan the QR code shown in your terminal
+4. App loads automatically! ✅
+
+> 📶 Your **phone and PC must be on the same WiFi network**.  
+> If it doesn't connect, press **`t`** in the terminal to enable **tunnel mode** (works across different networks).
+
+### Backend URL for Mobile
+
+The mobile app talks to the same Flask backend. Make sure the backend is running at `http://localhost:5000`. If testing on a physical device (not emulator), update the base URL in `android/src/constants/api.js` to your PC's local IP address:
+
+```js
+// Find your local IP: run `ipconfig` in terminal, look for IPv4 Address
+export const BASE_URL = 'http://192.168.x.x:5000';  // ← your PC's WiFi IP
+```
+
+---
+
 ## 🛠 Tech Stack
 
 | Layer | Technologies |

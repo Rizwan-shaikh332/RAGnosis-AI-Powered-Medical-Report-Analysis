@@ -23,7 +23,7 @@ export default function ChatScreen() {
         setInput('');
         setLoading(true);
         try {
-            const res = await api.post('/chatbot/chat', { message: q });
+            const res = await api.post('/chat/', { message: q });
             const reply = res.data.response || 'Sorry, I could not process that.';
             setMessages(prev => [...prev, { id: Date.now().toString() + '_r', role: 'assistant', text: reply }]);
         } catch (_) {

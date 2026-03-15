@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -18,6 +18,9 @@ import ReportDetailScreen from './src/screens/ReportDetailScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import MedicineReminderScreen from './src/screens/MedicineReminderScreen';
+
+// ── Auth context — lets Login/Register call setLoggedIn without route params ──
+export const AuthContext = createContext(null);
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -86,28 +89,28 @@ export default function App() {
     }
 
     return (
-        <NavigationContainer>
-            <StatusBar style="light" />
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-                {!loggedIn ? (
-                    <>
-                        <Stack.Screen name="Login" component={LoginScreen}
-                            initialParams={{ onLogin: () => setLoggedIn(true) }} />
-                        <Stack.Screen name="Register" component={RegisterScreen}
-                            initialParams={{ onLogin: () => setLoggedIn(true) }} />
-                    </>
-                ) : (
-                    <>
-                        <Stack.Screen name="Main" component={MainTabs} />
-                        <Stack.Screen name="ReportDetail" component={ReportDetailScreen}
-                            options={{
-                                headerShown: true, title: 'Report Details',
-                                headerStyle: { backgroundColor: COLORS.card },
-                                headerTintColor: COLORS.textPrimary
-                            }} />
-                    </>
-                )}
-            </Stack.Navigator>
-        </NavigationContainer>
+        <AuthContext.Provider value={{ setLoggedIn }}>
+            <NavigationContainer>
+                <StatusBar style="light" />
+                <Stack.Navigator screenOptions={{ headerShown: false }}>
+                    {!loggedIn ? (
+                        <>
+                            <Stack.Screen name="Login" component={LoginScreen} />
+                            <Stack.Screen name="Register" component={RegisterScreen} />
+                        </>
+                    ) : (
+                        <>
+                            <Stack.Screen name="Main" component={MainTabs} />
+                            <Stack.Screen name="ReportDetail" component={ReportDetailScreen}
+                                options={{
+                                    headerShown: true, title: 'Report Details',
+                                    headerStyle: { backgroundColor: COLORS.card },
+                                    headerTintColor: COLORS.textPrimary
+                                }} />
+                        </>
+                    )}
+                </Stack.Navigator>
+            </NavigationContainer>
+        </AuthContext.Provider>
     );
 }
