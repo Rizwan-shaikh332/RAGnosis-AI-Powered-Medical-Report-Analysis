@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import MedicineRemindersTab from '../components/MedicineRemindersTab'
+import HealthCard from '../components/HealthCard'
 import {
     RadarChart, Radar, PolarGrid, PolarAngleAxis,
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -521,6 +522,7 @@ function ReportDetailView({ report, onBack }) {
 // ── Sidebar items ──
 const NAV = [
     { key: 'overview', icon: '🏠', label: 'Overview' },
+    { key: 'health', icon: '💚', label: 'Health Card' },
     { key: 'upload', icon: '📤', label: 'Upload Report' },
     { key: 'reports', icon: '📋', label: 'My Reports' },
     { key: 'metrics', icon: '📊', label: 'Health Metrics' },
@@ -536,6 +538,7 @@ const NAV = [
 function PrescriptionsTab() {
     const [prescriptions, setPrescriptions] = useState([])
     const [loading, setLoading] = useState(true)
+    const [expandedId, setExpandedId] = useState(null)
 
     useEffect(() => {
         axios.get('/api/hospital/prescriptions/me')
@@ -557,54 +560,162 @@ function PrescriptionsTab() {
 
     return (
         <div>
-            <h2 style={{ fontWeight: 800, marginBottom: 24, fontSize: '1.5rem' }}>🩺 My Prescriptions ({prescriptions.length})</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                {prescriptions.map(px => (
-                    <motion.div key={px._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: 24 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
-                            <div>
-                                <div style={{ fontWeight: 800, fontSize: '1rem' }}>Dr. {px.doctor_name}</div>
-                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{px.doctor_specialization || 'Doctor'} · {new Date(px.created_at?.$date || px.created_at).toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</div>
-                            </div>
-                            <span className="badge badge-cyan">{(px.medicines || []).length} medicine{(px.medicines || []).length !== 1 ? 's' : ''}</span>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            {(px.medicines || []).map((m, i) => (
-                                <div key={i} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 10, padding: '12px 14px', background: 'var(--bg-secondary)', borderRadius: 14, border: '1px solid rgba(0,212,170,0.15)' }}>
-                                    <div>
-                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>💊 Medicine</div>
-                                        <div style={{ fontWeight: 800, color: 'var(--accent-cyan)', fontSize: '0.92rem' }}>{m.name}</div>
+            <h2 style={{ fontWeight: 800, marginBottom: 24, fontSize: '1.5rem', color: 'var(--text-primary)' }}>💊 My Prescriptions ({prescriptions.length})</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {prescriptions.map(px => {
+                    const isExpanded = expandedId === px._id
+                    const medicineCount = (px.medicines || []).length
+                    
+                    return (
+                        <motion.div 
+                            key={px._id} 
+                            initial={{ opacity: 0, y: 12 }} 
+                            animate={{ opacity: 1, y: 0 }}
+                            style={{ 
+                                background: 'var(--bg-card)', 
+                                border: '1px solid var(--border)', 
+                                borderRadius: 16, 
+                                overflow: 'hidden',
+                                transition: 'all 0.3s ease'
+                            }}>
+                            
+                            {/* Header - Always Visible */}
+                            <div
+                                onClick={() => setExpandedId(isExpanded ? null : px._id)}
+                                style={{
+                                    padding: '18px 24px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    backgroundColor: 'var(--bg-secondary)',
+                                    transition: 'background 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 212, 170, 0.05)'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+                            >
+                                {/* Doctor Info */}
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        <div style={{ fontSize: '1.4rem' }}>👨‍⚕️</div>
+                                        <div>
+                                            <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
+                                                Dr. {px.doctor_name}
+                                            </div>
+                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                                {px.doctor_specialization || 'Doctor'} • {new Date(px.created_at?.$date || px.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            </div>
+                                        </div>
                                     </div>
-                                    {m.dosage && <div>
-                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Dosage</div>
-                                        <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{m.dosage}</div>
-                                    </div>}
-                                    {m.frequency && <div>
-                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Frequency</div>
-                                        <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{m.frequency}</div>
-                                    </div>}
-                                    {m.duration && <div>
-                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Duration</div>
-                                        <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{m.duration}</div>
-                                    </div>}
-                                    {m.instructions && <div style={{ gridColumn: '1 / -1' }}>
-                                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Instructions</div>
-                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{m.instructions}</div>
-                                    </div>}
                                 </div>
-                            ))}
-                        </div>
 
-                        {px.notes && (
-                            <div style={{ marginTop: 14, padding: '10px 14px', background: 'rgba(124,58,237,0.08)', borderRadius: 10, border: '1px solid rgba(124,58,237,0.2)' }}>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📝 Doctor's Notes: </span>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{px.notes}</span>
+                                {/* Medicine Count & Toggle */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginLeft: 16 }}>
+                                    <span style={{
+                                        background: 'var(--accent-cyan)',
+                                        color: '#000',
+                                        padding: '6px 12px',
+                                        borderRadius: 8,
+                                        fontSize: '0.85rem',
+                                        fontWeight: 700,
+                                        whiteSpace: 'nowrap'
+                                    }}>
+                                        {medicineCount} 💊
+                                    </span>
+                                    <div style={{
+                                        fontSize: '1.5rem',
+                                        color: 'var(--accent-cyan)',
+                                        transition: 'transform 0.3s ease',
+                                        transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+                                    }}>
+                                        ▼
+                                    </div>
+                                </div>
                             </div>
-                        )}
-                    </motion.div>
-                ))}
+
+                            {/* Expandable Medicines Section */}
+                            <AnimatePresence>
+                                {isExpanded && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        style={{ overflow: 'hidden' }}
+                                    >
+                                        <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)' }}>
+                                            {/* Medicines List */}
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+                                                {(px.medicines || []).map((m, i) => (
+                                                    <div 
+                                                        key={i} 
+                                                        style={{
+                                                            padding: '16px',
+                                                            background: 'var(--bg-primary)',
+                                                            borderRadius: 12,
+                                                            border: '1px solid var(--border)',
+                                                            borderLeft: '4px solid var(--accent-cyan)'
+                                                        }}
+                                                    >
+                                                        {/* Medicine Name */}
+                                                        <div style={{ marginBottom: 12 }}>
+                                                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>💊 Medicine Name</div>
+                                                            <div style={{ fontWeight: 800, color: 'var(--accent-cyan)', fontSize: '1.1rem' }}>{m.name}</div>
+                                                        </div>
+
+                                                        {/* Details Grid */}
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+                                                            {m.dosage && (
+                                                                <div>
+                                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>📏 Dosage</div>
+                                                                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-secondary)' }}>{m.dosage}</div>
+                                                                </div>
+                                                            )}
+                                                            {m.frequency && (
+                                                                <div>
+                                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>⏰ Frequency</div>
+                                                                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-secondary)' }}>{m.frequency}</div>
+                                                                </div>
+                                                            )}
+                                                            {m.duration && (
+                                                                <div>
+                                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>📅 Duration</div>
+                                                                    <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-secondary)' }}>{m.duration}</div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Instructions */}
+                                                        {m.instructions && (
+                                                            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>📝 Instructions</div>
+                                                                <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{m.instructions}</div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Doctor's Notes */}
+                                            {px.notes && (
+                                                <div style={{
+                                                    padding: '14px 16px',
+                                                    background: 'rgba(124, 58, 237, 0.1)',
+                                                    borderRadius: 10,
+                                                    border: '1px solid var(--accent-purple)',
+                                                    borderLeft: '4px solid var(--accent-purple)'
+                                                }}>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>📋 Doctor's Notes</div>
+                                                    <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{px.notes}</div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </motion.div>
+                    )
+                })}
             </div>
         </div>
     )
@@ -1192,12 +1303,13 @@ export default function Dashboard() {
     useEffect(() => { fetchReports() }, [fetchReports])
 
     const renderContent = () => {
-        const REPORT_TABS = ['overview', 'reports', 'report-detail', 'metrics']
+        const REPORT_TABS = ['overview', 'reports', 'report-detail', 'metrics', 'health']
         if (loadingReports && REPORT_TABS.includes(activeTab)) {
             return <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><div className="spinner" /></div>
         }
         switch (activeTab) {
             case 'overview': return <OverviewTab user={user} reports={reports} setActiveTab={setActiveTab} />
+            case 'health': return <HealthCard />
             case 'upload': return <UploadTab onUploadSuccess={fetchReports} />
             case 'reports': return <ReportsTab reports={reports} onSelect={async (r) => {
                 try {

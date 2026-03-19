@@ -18,6 +18,7 @@ import ReportDetailScreen from './src/screens/ReportDetailScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import MedicineReminderScreen from './src/screens/MedicineReminderScreen';
+import HealthScreen from './src/screens/HealthScreen';
 
 // ── Auth context — lets Login/Register call setLoggedIn without route params ──
 export const AuthContext = createContext(null);
@@ -49,6 +50,7 @@ function MainTabs() {
                 tabBarIcon: ({ focused, color, size }) => {
                     const icons = {
                         Overview: focused ? 'home' : 'home-outline',
+                        Health: focused ? 'heart' : 'heart-outline',
                         Upload: focused ? 'cloud-upload' : 'cloud-upload-outline',
                         Reports: focused ? 'document-text' : 'document-text-outline',
                         Chat: focused ? 'chatbubble' : 'chatbubble-outline',
@@ -60,6 +62,7 @@ function MainTabs() {
             })}
         >
             <Tab.Screen name="Overview" component={DashboardScreen} />
+            <Tab.Screen name="Health" component={HealthScreen} />
             <Tab.Screen name="Upload" component={UploadScreen} />
             <Tab.Screen name="Reports" component={ReportsScreen} />
             <Tab.Screen name="Chat" component={ChatScreen} />
