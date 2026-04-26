@@ -348,23 +348,50 @@ function ReportDetailView({ report, onBack }) {
 
             {/* ── Header ── */}
             <div style={{ marginBottom: 24 }}>
-                <h2 style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: 8 }}>{report.original_name}</h2>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <span className="badge badge-cyan">{report.report_type}</span>
-                    {elevated.length > 0 && (
-                        <span className="badge" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid #ef444440' }}>
-                            ⬆️ {elevated.length} elevated
-                        </span>
-                    )}
-                    {lowVals.length > 0 && (
-                        <span className="badge" style={{ background: 'rgba(251,191,36,0.15)', color: '#f59e0b', border: '1px solid #f59e0b40' }}>
-                            ⬇️ {lowVals.length} low
-                        </span>
-                    )}
-                    {normal.length > 0 && (
-                        <span className="badge" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid #10b98140' }}>
-                            ✓ {normal.length} normal
-                        </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                    <div>
+                        <h2 style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: 8 }}>{report.original_name}</h2>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <span className="badge badge-cyan">{report.report_type}</span>
+                            {elevated.length > 0 && (
+                                <span className="badge" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid #ef444440' }}>
+                                    ⬆️ {elevated.length} elevated
+                                </span>
+                            )}
+                            {lowVals.length > 0 && (
+                                <span className="badge" style={{ background: 'rgba(251,191,36,0.15)', color: '#f59e0b', border: '1px solid #f59e0b40' }}>
+                                    ⬇️ {lowVals.length} low
+                                </span>
+                            )}
+                            {normal.length > 0 && (
+                                <span className="badge" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid #10b98140' }}>
+                                    ✓ {normal.length} normal
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {report.is_critical && (
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            style={{ 
+                                background: 'rgba(239, 68, 68, 0.1)', 
+                                border: '2px solid #ef4444', 
+                                padding: '10px 20px', 
+                                borderRadius: 12,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 10,
+                                boxShadow: '0 0 20px rgba(239, 68, 68, 0.2)'
+                            }}
+                        >
+                            <span style={{ fontSize: '1.5rem', animation: 'pulsate 1.5s infinite' }}>🚨</span>
+                            <div>
+                                <div style={{ color: '#ef4444', fontWeight: 900, fontSize: '0.85rem', letterSpacing: '0.05em' }}>CRITICAL CONDITION DETECTED</div>
+                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Urgent consultation recommended</div>
+                            </div>
+                        </motion.div>
                     )}
                 </div>
             </div>
@@ -506,6 +533,120 @@ function ReportDetailView({ report, onBack }) {
                             </tbody>
                         </table>
                     </div>
+                </div>
+            )}
+
+            {/* ── Suggested Specialists Section (only for critical reports) ── */}
+            {report.is_critical && report.suggested_doctors?.length > 0 && (
+                <div style={{ marginBottom: 28, marginTop: 12 }}>
+                    <h3 style={{ fontWeight: 700, marginBottom: 14, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                        🩺 Recommended Specialists for Consultation
+                        {report.is_critical && (
+                            <span style={{ 
+                                background: 'rgba(239,68,68,0.15)', color: '#ef4444', 
+                                padding: '3px 10px', borderRadius: 99, fontSize: '0.72rem', 
+                                fontWeight: 700, border: '1px solid #ef444440',
+                                animation: 'pulsate 1.5s infinite'
+                            }}>URGENT</span>
+                        )}
+                    </h3>
+
+                    {/* Specialist Advice */}
+                    {report.specialist_advice && (
+                        <div style={{ 
+                            padding: '14px 18px', marginBottom: 16,
+                            background: report.is_critical ? 'rgba(239, 68, 68, 0.08)' : 'rgba(0, 212, 170, 0.06)',
+                            borderRadius: 12,
+                            border: report.is_critical ? '1px solid rgba(239, 68, 68, 0.2)' : '1px solid rgba(0, 212, 170, 0.15)',
+                            display: 'flex', alignItems: 'center', gap: 10
+                        }}>
+                            <span style={{ fontSize: '1.2rem' }}>💡</span>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontWeight: 500 }}>
+                                {report.specialist_advice}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Doctor Table */}
+                    <div style={{ overflowX: 'auto', borderRadius: 14, border: '1px solid var(--border)' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                            <thead>
+                                <tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid var(--border)' }}>
+                                    {['Doctor', 'Specialization', 'Hospital', 'Experience', 'Fee', 'Contact'].map(h => (
+                                        <th key={h} style={{ 
+                                            padding: '12px 16px', textAlign: 'left', fontWeight: 700, 
+                                            color: 'var(--text-muted)', fontSize: '0.75rem', 
+                                            textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' 
+                                        }}>{h}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {report.suggested_doctors.map((doc, i) => (
+                                    <tr key={doc._id || i} style={{
+                                        borderBottom: i < report.suggested_doctors.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                                        transition: 'background 0.2s',
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(0, 212, 170, 0.04)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                    >
+                                        <td style={{ padding: '14px 16px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <div style={{ 
+                                                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                                                    background: 'rgba(0, 212, 170, 0.1)', 
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    fontSize: '1rem', border: '1px solid rgba(0, 212, 170, 0.2)'
+                                                }}>👨‍⚕️</div>
+                                                <div>
+                                                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.88rem' }}>{doc.name}</div>
+                                                    {doc.qualification && (
+                                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{doc.qualification}</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '14px 16px' }}>
+                                            <span style={{ 
+                                                display: 'inline-block', padding: '3px 10px', borderRadius: 99, 
+                                                fontSize: '0.72rem', fontWeight: 700,
+                                                background: 'rgba(0, 212, 170, 0.1)', color: 'var(--accent-cyan)', 
+                                                border: '1px solid rgba(0, 212, 170, 0.25)' 
+                                            }}>{doc.specialization}</span>
+                                        </td>
+                                        <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+                                            <div>📍 {doc.hospital}</div>
+                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{doc.location}, {doc.city}</div>
+                                        </td>
+                                        <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                                            {doc.experience}
+                                        </td>
+                                        <td style={{ padding: '14px 16px', fontWeight: 700, color: 'var(--accent-green)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                                            {doc.consultation_fee || '—'}
+                                        </td>
+                                        <td style={{ padding: '14px 16px' }}>
+                                            <button 
+                                                className="btn-primary"
+                                                style={{ 
+                                                    padding: '6px 14px', fontSize: '0.75rem', height: 'auto',
+                                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                                    whiteSpace: 'nowrap'
+                                                }}
+                                                onClick={() => window.open(`tel:${doc.contact}`)}
+                                            >
+                                                📞 {doc.contact}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Available days note */}
+                    <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 10, fontStyle: 'italic' }}>
+                        💡 Contact the hospital to confirm doctor availability and book an appointment. Fees may vary.
+                    </p>
                 </div>
             )}
 

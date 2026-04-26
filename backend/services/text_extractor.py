@@ -582,7 +582,7 @@ def extract_medical_metrics(text: str) -> dict:
     text_lower = text.lower()
 
     NUM = r"([\d,]+\.?\d*)"
-    SEP = r"[\s\:\=\|]+"
+    SEP = r"[\s\:\=\|\-\(\)a-zA-Z]*"
 
     patterns = {
         "hemoglobin":    rf"(?:h(?:a)?emoglobin|hgb|hb(?!\w)){SEP}{NUM}",
@@ -652,7 +652,6 @@ def extract_medical_metrics(text: str) -> dict:
             metrics["platelets"] = round(p * 100, 1)            # lakhs -> k/uL
         elif p > 1000:
             metrics["platelets"] = round(p / 1000, 1)           # raw -> k/uL
-
     if "rbc" in metrics and metrics["rbc"] > 20:
         metrics["rbc"] = round(metrics["rbc"] / 1_000_000, 2)  # abs count -> M/uL
 
@@ -679,19 +678,51 @@ def extract_medical_metrics(text: str) -> dict:
 # ── Report Type Detection ─────────────────────────────────────────────────────
 
 def detect_report_type(text: str) -> str:
+    """Detect report type using keyword scoring — the category with the most keyword hits wins."""
     t = text.lower()
-    if any(w in t for w in ["hemoglobin", "haemoglobin", "rbc", "wbc", "platelet", "cbc", "complete blood"]):
-        return "Blood / CBC Report"
-    elif any(w in t for w in ["glucose", "hba1c", "insulin", "diabetes"]):
-        return "Diabetes / Glucose Report"
-    elif any(w in t for w in ["cholesterol", "triglyceride", "ldl", "hdl", "lipid"]):
-        return "Lipid Panel Report"
-    elif any(w in t for w in ["creatinine", "urea", "kidney", "renal", "gfr"]):
-        return "Kidney Function Report"
-    elif any(w in t for w in ["sgpt", "sgot", "liver", "bilirubin", "hepatic"]):
-        return "Liver Function Report"
-    elif any(w in t for w in ["tsh", "t3", "t4", "thyroid"]):
-        return "Thyroid Report"
-    elif any(w in t for w in ["x-ray", "xray", "mri", "ct scan", "radiology", "scan"]):
-        return "Radiology Report"
-    return "General Medical Report"
+
+    categories = {
+        "Diabetes / Glucose Report":  ["glucose", "hba1c", "insulin", "diabetes", "fasting blood sugar",
+                                        "fbs", "rbs", "random blood sugar", "sugar", "glycated",
+                                        "hyperglycemia", "hypoglycemia", "diabetic", "oral glucose"],
+        "Blood / CBC Report":         ["cbc", "complete blood count", "wbc count", "rbc count",
+                                        "platelet count", "differential count", "neutrophil",
+                                        "lymphocyte", "eosinophil", "basophil", "monocyte",
+                                        "haematocrit", "hematocrit", "mcv", "mch", "mchc",
+                                        "packed cell volume"],
+        "Lipid Panel Report":         ["cholesterol", "triglyceride", "ldl", "hdl", "lipid profile",
+                                        "vldl", "lipid panel", "total cholesterol", "atherogenic"],
+        "Kidney Function Report":     ["creatinine", "urea", "kidney", "renal", "gfr",
+                                        "blood urea nitrogen", "bun", "uric acid", "kft",
+                                        "kidney function"],
+        "Liver Function Report":      ["sgpt", "sgot", "liver", "bilirubin", "hepatic",
+                                        "alkaline phosphatase", "alp", "ggt", "lft",
+                                        "liver function", "albumin", "globulin"],
+        "Thyroid Report":             ["tsh", "thyroid", "t3", "t4", "free t3", "free t4",
+                                        "thyroxine", "triiodothyronine"],
+        "Radiology Report":           ["x-ray", "xray", "mri", "ct scan", "radiology",
+                                        "ultrasound", "sonography", "imaging", "radiograph"],
+        "Urine Analysis Report":      ["urine", "urinalysis", "urine routine", "specific gravity",
+                                        "urine culture", "pus cells", "epithelial cells"],
+        "Vitamin / Nutrition Report": ["vitamin d", "vitamin b12", "folate", "folic acid",
+                                        "iron studies", "ferritin", "calcium", "vitamin"],
+        "Bone / Orthopedic Report":   ["bone density", "dexa", "fracture", "osteoporosis",
+                                        "orthopedic", "joint", "arthritis", "bone mineral"],
+        "Skin / Dermatology Report":  ["skin", "dermatology", "biopsy", "dermatitis",
+                                        "eczema", "psoriasis", "allergy", "ige"],
+        "Cardiac / ECG Report":       ["ecg", "ekg", "electrocardiogram", "echocardiogram",
+                                        "cardiac", "heart rate", "rhythm", "treadmill test"],
+        "Pulmonary Report":           ["spirometry", "lung function", "fev1", "fvc",
+                                        "pulmonary", "respiratory", "chest x-ray"],
+    }
+
+    scores = {}
+    for category, keywords in categories.items():
+        score = sum(t.count(kw) for kw in keywords)
+        if score > 0:
+            scores[category] = score
+
+    if not scores:
+        return "General Medical Report"
+
+    return max(scores, key=scores.get)

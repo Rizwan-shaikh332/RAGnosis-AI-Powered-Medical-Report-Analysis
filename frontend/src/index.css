@@ -637,3 +637,9 @@ input, textarea, select { font-family: inherit; }
   .auth-card { padding: 28px 20px; }
   .section-title { font-size: 1.8rem; }
 }
+
+@keyframes pulsate {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}

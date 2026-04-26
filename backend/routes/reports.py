@@ -10,6 +10,7 @@ from services.text_extractor import (
     detect_report_type, is_medical_report
 )
 from services.bert_summarizer import summarize_medical_text, simplify_medical_summary, build_recommendations
+from services.doctor_service import get_suggested_doctors, get_specialist_advice
 from config import Config
 
 reports_bp = Blueprint("reports", __name__)
@@ -113,6 +114,12 @@ def upload_report():
 
         # ── Step 4: Save to DB ────────────────────────────────────────────────
         current_app.logger.info("[UPLOAD] Saving to DB...")
+
+        # Calculate suggested doctors based on report type
+        suggested_doctors = get_suggested_doctors(report_type)
+        is_critical = any(r.get("is_critical") for r in recommendations)
+        specialist_advice = get_specialist_advice(report_type)
+
         try:
             report_id = create_report(request.user_id, {
                 "filename": unique_name,
@@ -124,6 +131,9 @@ def upload_report():
                 "metrics": metrics,
                 "report_type": report_type,
                 "recommendations": recommendations,
+                "is_critical": is_critical,
+                "suggested_doctors": suggested_doctors,
+                "specialist_advice": specialist_advice,
             })
             current_app.logger.info(f"[UPLOAD] Saved report: {report_id}")
         except Exception as db_err:
@@ -155,6 +165,9 @@ def upload_report():
         "summary": summary,
         "metrics": metrics,
         "recommendations": recommendations,
+        "is_critical": is_critical,
+        "suggested_doctors": suggested_doctors,
+        "specialist_advice": specialist_advice,
     }), 201
 
 
@@ -186,6 +199,15 @@ def get_report(report_id):
     report.pop("file_path", None)
     if not report.get("recommendations") and report.get("metrics"):
         report["recommendations"] = build_recommendations(report["metrics"])
+    
+    # Ensure is_critical and suggested_doctors are present
+    if "is_critical" not in report:
+        report["is_critical"] = any(r.get("is_critical") for r in (report.get("recommendations") or []))
+    if not report.get("suggested_doctors"):
+        report["suggested_doctors"] = get_suggested_doctors(report.get("report_type", "General Medical Report"))
+    if not report.get("specialist_advice"):
+        report["specialist_advice"] = get_specialist_advice(report.get("report_type", "General Medical Report"))
+        
     return jsonify(report), 200
 
 

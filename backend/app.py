@@ -37,6 +37,14 @@ def create_app():
     app.register_blueprint(reminders_bp, url_prefix="/api/reminders")
     app.register_blueprint(hospital_bp, url_prefix="/api/hospital")
 
+    from routes.doctors import doctors_bp
+    app.register_blueprint(doctors_bp, url_prefix="/api/doctors")
+
+    # Seed doctors collection on first run
+    from models.doctor_model import seed_doctors
+    with app.app_context():
+        seed_doctors()
+
     @app.route("/api/health")
     def health():
         print("[HEALTH] Health check requested")

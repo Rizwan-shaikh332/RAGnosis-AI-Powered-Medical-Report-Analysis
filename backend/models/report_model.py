@@ -16,6 +16,9 @@ def create_report(user_id: str, data: dict) -> str:
         "metrics": data.get("metrics", {}),    # extracted health numbers
         "recommendations": data.get("recommendations", []),  # customized health tips
         "report_type": data.get("report_type", "General"),
+        "is_critical": data.get("is_critical", False),
+        "suggested_doctors": data.get("suggested_doctors", []),
+        "specialist_advice": data.get("specialist_advice", ""),
         "uploaded_at": datetime.utcnow(),
         "status": "processed"
     }

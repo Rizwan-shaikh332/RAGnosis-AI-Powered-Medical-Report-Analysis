@@ -80,14 +80,14 @@ def get_summarizer():
         return _summarizer
 
     if not _is_bart_cached():
-        print("ℹ️  BART model not cached locally → using fast extractive summarizer.")
+        print("[INFO] BART model not cached locally - using fast extractive summarizer.")
         _summarizer = "fallback"
         return _summarizer
 
     try:
         from transformers import pipeline
         import torch
-        print("⏳ Loading cached BART model …")
+        print("[INFO] Loading cached BART model...")
         _summarizer = pipeline(
             "summarization",
             model=_BART_MODEL,
@@ -96,9 +96,9 @@ def get_summarizer():
             # local_files_only=True prevents any network call during load
             model_kwargs={"local_files_only": True},
         )
-        print("✅ BART model loaded!")
+        print("[OK] BART model loaded!")
     except Exception as e:
-        print(f"⚠️  BART load error: {e}  →  using extractive fallback.")
+        print(f"[WARN] BART load error: {e} - using extractive fallback.")
         _summarizer = "fallback"
 
     return _summarizer
@@ -183,6 +183,39 @@ def simplify_medical_summary(summary: str, metrics: dict) -> str:
     if interpretations:
         summary += "\n\n📊 Key Findings:\n" + "\n".join(f"  • {i}" for i in interpretations)
     return summary
+
+
+# ─────────────────────────────────────────────────────────
+#  CRITICAL THRESHOLDS
+# ─────────────────────────────────────────────────────────
+CRITICAL_THRESHOLDS = {
+    "hemoglobin":    {"low": 8.0,  "high": 19.5},
+    "glucose":       {"low": 50.0, "high": 250.0},
+    "cholesterol":   {"high": 300.0},
+    "triglycerides": {"high": 400.0},
+    "creatinine":    {"high": 3.0},
+    "tsh":           {"low": 0.1,  "high": 15.0},
+    "wbc":           {"low": 2.0,  "high": 35.0},
+    "platelets":     {"low": 50.0, "high": 900.0},
+    "sgpt":          {"high": 250.0},
+    "sgot":          {"high": 250.0},
+}
+
+def is_critical_metric(key: str, value: float) -> bool:
+    """Check if a metric value is within the 'Critical' range."""
+    limits = CRITICAL_THRESHOLDS.get(key)
+    if not limits:
+        return False
+    
+    low = limits.get("low")
+    high = limits.get("high")
+    
+    if low is not None and value <= low:
+        return True
+    if high is not None and value >= high:
+        return True
+    
+    return False
 
 
 # ─────────────────────────────────────────────────────────
@@ -451,6 +484,7 @@ def build_recommendations(metrics: dict) -> list:
             "value":        value,
             "unit":         meta["unit"],
             "status":       status,
+            "is_critical":  is_critical_metric(key, value),
             "normal_range": f"{lo}–{hi} {meta['unit']}",
             "normal_lo":    lo,
             "normal_hi":    hi,
