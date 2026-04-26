@@ -66,6 +66,8 @@ RAGnosis follows a **modern 3-tier architecture**:
   - RAG Engine (FAISS vector indexing)
   - Groq AI Chatbot (LLaMA 3 model)
   - Reminder Management
+  - **Doctor Suggestion Service** (report-type → specialist mapping + MongoDB queries)
+  - **Critical Detection Engine** (threshold-based flagging for abnormal values)
 
 ### Tier 3: AI/ML Layer
 - **Text Extraction**: Tesseract OCR + pdfplumber
@@ -136,8 +138,9 @@ RAGnosis follows a **modern 3-tier architecture**:
 │ ├── users                    │    │  • TensorFlow Models        │
 │ ├── reports                  │    │                              │
 │ ├── reminders                │    │  Model Storage:              │
-│ └── (future) notifications   │    │  ├── FAISS Index (/models)  │
-│                              │    │  ├── Medical KB (JSONL)     │
+│ ├── suggested_doctors        │    │  ├── FAISS Index (/models)  │
+│ └── (future) notifications   │    │  ├── Medical KB (JSONL)     │
+│                              │    │                              │
 └──────────────────────────────┘    └──────────────────────────────┘
 
 ┌──────────────────────────────┐
@@ -239,7 +242,7 @@ Stores uploaded medical reports and extracted data.
   "file_path": String (server storage path),
   "file_type": String (pdf/jpg/png),
   "raw_text": String (extracted OCR text),
-  "report_type": String (CBC/Lipid/LFT/etc.),
+  "report_type": String (CBC/Lipid/LFT/Diabetes/Thyroid/Urine/Vitamin/Bone/Skin/Cardiac/Pulmonary/etc.),
   "summary": String (AI-generated summary),
   "metrics": {
     "hemoglobin": Float,
@@ -248,11 +251,45 @@ Stores uploaded medical reports and extracted data.
     "triglycerides": Float,
     ... (up to 30+ medical metrics)
   },
+  "is_critical": Boolean (true if any metric exceeds critical thresholds),
+  "suggested_doctors": [
+    {
+      "name": "Dr. Abhijeet Palshikar",
+      "specialization": "Cardiologist",
+      "hospital": "Sahyadri Hospital, Bibwewadi",
+      "contact": "+91 8806252525",
+      ...
+    }
+  ],
+  "specialist_advice": String (e.g., "Your CBC report indicates you should consult a Hematologist..."),
   "uploaded_at": DateTime,
   "processed_at": DateTime,
   "status": String (processing/completed/failed)
 }
 ```
+
+### Collection: `suggested_doctors`
+Stores verified specialist doctors for recommendation.
+Seeded on application startup with 28 real doctors across 12 specializations near Katraj, Pune.
+
+```json
+{
+  "_id": ObjectId,
+  "name": "Dr. Chandrakant Lahane",
+  "specialization": "Hematologist",
+  "qualification": "MD, DM (Clinical Hematology)",
+  "hospital": "Sahyadri Hospital, Bibwewadi",
+  "location": "Bibwewadi",
+  "city": "Pune",
+  "contact": "+91 8806252525",
+  "experience": "15+ years",
+  "rating": 4.5,
+  "consultation_fee": "₹800",
+  "available_days": "Mon–Sat"
+}
+```
+
+**Specializations covered**: Hematologist, Endocrinologist, Diabetologist, Cardiologist, Nephrologist, Hepatologist, Gastroenterologist, Radiologist, Urologist, Orthopedic Surgeon, Dermatologist, Pulmonologist, General Physician
 
 ### Collection: `reminders`
 Stores medicine reminder schedules.
@@ -384,8 +421,12 @@ chat_history {
 │    b) Extract text (Tesseract OCR) │
 │    c) Validate medical content     │
 │    d) Extract metrics (regex)      │
-│    e) Summarize (BART model)       │
-│    f) Store in MongoDB             │
+│    e) Detect report type (scoring) │
+│    f) Summarize (BART model)       │
+│    g) Check critical thresholds    │
+│    h) Query suggested_doctors DB   │
+│    i) Generate specialist advice   │
+│    j) Store in MongoDB             │
 └────────┬───────────────────────────┘
          │
          ▼
@@ -393,13 +434,12 @@ chat_history {
 │ 4. Response (JSON):                │
 │    {                               │
 │      "_id": "...",                 │
-│      "report_type": "CBC",         │
+│      "report_type": "Diabetes",    │
 │      "summary": "...",             │
-│      "metrics": {                  │
-│        "hemoglobin": 13.5,         │
-│        "glucose": 95,              │
-│        ...                         │
-│      }                             │
+│      "metrics": { ... },           │
+│      "is_critical": true/false,    │
+│      "suggested_doctors": [...],   │
+│      "specialist_advice": "..."    │
 │    }                               │
 └────────┬───────────────────────────┘
          │
@@ -411,6 +451,12 @@ chat_history {
 │    • Visual status indicators         │
 │      (✓ NORMAL, ↑ HIGH, ↓ LOW)       │
 │    • Health recommendations           │
+│    • If CRITICAL:                     │
+│      - Red "CRITICAL CONDITION" alert │
+│      - Specialist advice text         │
+│      - Doctor suggestion table        │
+│        (name, hospital, fee, contact) │
+│      - Click-to-call buttons          │
 │                                      │
 │    Report now synced:                │
 │    • Visible on web dashboard        │
@@ -595,6 +641,15 @@ chat_history {
 |--------|----------|------|---------|
 | POST | `/` | ✅ | Send message to AI chatbot |
 | GET | `/suggestions` | ✅ | Get suggested questions |
+
+### Doctor Directory (`/api/doctors`)
+
+| Method | Endpoint | Auth | Purpose |
+|--------|----------|------|---------|
+| GET | `/` | ❌ | List all doctors (filter by `?city=Pune&specialization=Cardiologist`) |
+| GET | `/<id>` | ❌ | Get single doctor by ID |
+| POST | `/` | ❌ | Add a new doctor (admin use) |
+| DELETE | `/<id>` | ❌ | Remove a doctor |
 
 ### Health Check (`/api`)
 
@@ -1001,6 +1056,73 @@ Notes: Take with breakfast and dinner
 📱 Notification: "💊 Time to take Metformin 500mg"
 ```
 
+### Feature 5: Critical Report Detection & Doctor Suggestions
+
+**What it does**:
+- Detects critical/abnormal values in uploaded reports using medical threshold checks
+- Uses **scoring-based report type detection** (13 categories) instead of first-match for accuracy
+- Maps each report type to relevant specialist categories
+- Queries the `suggested_doctors` MongoDB collection for matching doctors near the user’s location
+- Displays specialist advice text (e.g., "Your CBC report indicates you should consult a Hematologist - MBBS, MD/DM")
+- Shows a table of real doctors with name, qualification, hospital, experience, consultation fee, and click-to-call contact
+
+**When It Triggers**:
+- Doctor suggestions appear **only when the report is flagged as critical**
+- Non-critical reports show analysis and metrics without the specialist table
+
+**Report Types Supported (13)**:
+- Blood / CBC Report
+- Diabetes / Glucose Report
+- Lipid Panel Report
+- Kidney Function Report
+- Liver Function Report
+- Thyroid Report
+- Radiology Report
+- Urine Analysis Report
+- Vitamin / Nutrition Report
+- Bone / Orthopedic Report
+- Skin / Dermatology Report
+- Cardiac / ECG Report
+- Pulmonary Report
+
+**Specialist Mapping Example**:
+```
+Diabetes / Glucose Report → Endocrinologist + Diabetologist + General Physician
+Lipid Panel Report → Cardiologist + General Physician
+Kidney Function Report → Nephrologist + General Physician
+Liver Function Report → Hepatologist + Gastroenterologist + General Physician
+```
+
+**Doctor Database**:
+- 28 doctors across 12 specializations stored in MongoDB `suggested_doctors` collection
+- Auto-seeded on first application startup (`doctor_model.seed_doctors()`)
+- Real hospital names from Pune: Sahyadri, Bharati, Ruby Hall Clinic, KEM, Jehangir, Deenanath Mangeshkar
+- Includes: name, qualification, hospital, location, city, contact number, experience, rating, consultation fee
+
+**Example Output**:
+```
+🚨 CRITICAL CONDITION DETECTED
+
+💡 Your CBC report indicates you should consult a Hematologist
+   (MBBS, MD/DM in Hematology) for blood-related conditions.
+
+🩺 Recommended Specialists for Consultation [URGENT]
+┌─────────────────────────┬────────────────┬────────────────────┬────────────┬──────┬─────────────────┐
+│ Doctor                  │ Specialization │ Hospital             │ Experience │ Fee  │ Contact         │
+├─────────────────────────┼────────────────┼────────────────────┼────────────┼──────┼─────────────────┤
+│ Dr. Chandrakant Lahane  │ Hematologist   │ Sahyadri, Bibwewadi  │ 15+ years  │ ₹800 │ 📞 +91 880625 │
+│ Dr. Vinod Borse         │ Gen. Physician │ Katraj PHC           │ 20+ years  │ ₹300 │ 📞 +91 020243 │
+└─────────────────────────┴────────────────┴────────────────────┴────────────┴──────┴─────────────────┘
+
+💡 Contact the hospital to confirm doctor availability and book an appointment.
+```
+
+**Key Files**:
+- `backend/models/doctor_model.py` — MongoDB model + seed data (28 doctors)
+- `backend/services/doctor_service.py` — Report-type → specialist mapping + advice text
+- `backend/routes/doctors.py` — REST API for doctor CRUD
+- `frontend/src/pages/Dashboard.jsx` — Critical alert banner + doctor suggestion table
+
 ---
 
 ## 🆘 Troubleshooting Guide
@@ -1157,5 +1279,5 @@ For issues, feature requests, or contributions:
 
 ---
 
-**Last Updated**: March 11, 2026  
-**Version**: 1.0.0
+**Last Updated**: April 26, 2026  
+**Version**: 1.1.0 — Added Critical Detection & Doctor Suggestion System

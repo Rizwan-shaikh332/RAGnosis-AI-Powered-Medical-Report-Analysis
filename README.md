@@ -120,6 +120,7 @@ RAGnosis is the **AI backbone that hospitals and patients need** — combining i
 | 💰 **Insurance Recommendations** | Smart algorithm provides health insurance advice based on health score (0-100%) |
 | 🏥 **Hospital Integration** | Seamless workflow: Patient Registration → Appointment Booking → Report Upload → Prescription Assignment |
 | 📈 **Health Metrics Tracking** | Compare CBC, Diabetes, Lipid, Kidney, Liver, Thyroid reports across time |
+| 🚨 **Critical Detection & Doctor Suggestions** | Auto-detects critical values → recommends nearby specialists (28 doctors, 12 specializations) with real contact numbers |
 | 🔔 **Medicine Reminders** | Daily push notifications for prescribed medicines (mobile app) |
 | 🌙 **Dark Theme UI** | Navy/Cyan glassmorphism with smooth Framer Motion animations |
 | ⚡ **Fast LLM Inference** | Groq LPU hardware delivers 500+ tokens/sec (10× faster than GPU) |
@@ -137,7 +138,12 @@ RAGnosis is the **AI backbone that hospitals and patients need** — combining i
    - 📈 Trend visualization across multiple reports
    - 💡 Actionable health tips per abnormal value
 4. **Chat with AI** — Ask "What does hemoglobin mean?" → instant RAG-powered answer with personalized context
-5. **Track Health Score** — See overall wellness (0-100%), understand how it's calculated
+5. **Critical Alerts & Doctor Suggestions** — If report values are critical, get:
+   - 🚨 Pulsating "CRITICAL CONDITION DETECTED" banner
+   - 💡 Specialist advice (e.g., "Your CBC report indicates you should consult a Hematologist - MBBS, MD/DM")
+   - 🩺 Table of 28 real doctors near Katraj, Pune with name, hospital, qualification, fee & contact number
+   - 📞 Click-to-call buttons with real hospital phone numbers (Sahyadri, Bharati, Ruby Hall, KEM, etc.)
+6. **Track Health Score** — See overall wellness (0-100%), understand how it's calculated
 6. **Get Insurance Advice** — Personalized recommendations (standard/enhanced coverage) based on health metrics
 7. **View Prescriptions** — See all medicines prescribed by your doctor with dosage/frequency/duration
 8. **Set Medicine Reminders** — Daily push notifications for medications
@@ -186,7 +192,7 @@ RAGnosis is the **AI backbone that hospitals and patients need** — combining i
 │                      Flask REST API (Python)                           │
 ├────────────────────────────────────────────────────────────────────────┤
 │  /api/auth/*     /api/reports/*    /api/chat/*     /api/hospital/*    │
-│  /api/reminders/* /api/health (5+ routes each)                        │
+│  /api/reminders/* /api/doctors/*   /api/health (5+ routes each)       │
 │  ├── Text Extraction (pdfplumber, pytesseract)                        │
 │  ├── NER (dmis-lab/biobert-base-cased-v1.1)                           │
 │  ├── Summarization (facebook/bart-large-cnn)                          │
@@ -202,7 +208,9 @@ RAGnosis is the **AI backbone that hospitals and patients need** — combining i
    │-users    │         │          │        │500+      │
    │-reports  │         │          │        │tok/sec   │
    │-doctors  │         │          │        │          │
-   │-...(8)   │         │          │        │          │
+   │-suggested│         │          │        │          │
+   │ _doctors │         │          │        │          │
+   │-...(9)   │         │          │        │          │
    └──────────┘         └──────────┘        └──────────┘
 ```
 
@@ -244,7 +252,17 @@ STEP 4: AI SUMMARIZATION
             "Your hemoglobin is low (11.2 g/dL)
              which may indicate anemia..."
 
-STEP 5: RAG + LLM CHAT
+STEP 5: CRITICAL DETECTION & DOCTOR SUGGESTION
+  ├─ Compare extracted metrics against critical thresholds
+  │  └─ hemoglobin < 7 or glucose > 400 → is_critical = true
+  ├─ Score-based report type detection (13 categories)
+  │  └─ Keywords counted per category, highest score wins
+  ├─ Map report type → specialist categories
+  │  └─ "Diabetes / Glucose Report" → [Endocrinologist, Diabetologist, General Physician]
+  └─ Query MongoDB suggested_doctors collection
+     └─ Return matching doctors with contact info, hospital, fee
+
+STEP 6: RAG + LLM CHAT
   ├─ Embed report text
   │  └─ Sentence-BERT (sentence-transformers/all-MiniLM-L6-v2)
   │     └─ 384-dimensional vectors
@@ -528,6 +546,7 @@ export const BASE_URL = 'http://192.168.x.x:5000';  // ← your PC's WiFi IP
 | 📊 **Health Metrics** | Metric cards (NORMAL/HIGH/LOW), Recharts BarChart + LineChart trends |
 | 💊 **Medicine Reminders** | Add/manage daily medicine reminder notifications |
 | 🩺 **Prescriptions** | Cards showing all doctor prescriptions: medicine name, dosage, frequency, duration |
+| 🚨 **Critical Alerts** | Pulsating red banner for critical reports + specialist advice text + doctor suggestion table |
 | 🤖 **AI Chatbot** | Groq LLaMA 3 chat with RAG context + report context, quick suggestions |
 | 👤 **My Profile** | Displays all registered medical profile fields |
 
@@ -601,13 +620,16 @@ RAGnosis/
 │   │   ├── reports.py          # /api/reports/* — upload, list, retrieve
 │   │   ├── chatbot.py          # /api/chat/* — Groq LLM conversation
 │   │   ├── reminders.py        # /api/reminders/* — medicine reminders
-│   │   └── hospital.py         # /api/hospital/* — doctor, receptionist, appointments, prescriptions
+│   │   ├── hospital.py         # /api/hospital/* — doctor, receptionist, appointments, prescriptions
+│   │   └── doctors.py          # /api/doctors/* — specialist doctor directory CRUD
 │   ├── models/
 │   │   ├── user_model.py       # User CRUD
-│   │   └── report_model.py     # Report CRUD
+│   │   ├── report_model.py     # Report CRUD (includes is_critical, suggested_doctors)
+│   │   └── doctor_model.py     # Suggested doctors collection + seed data (28 doctors)
 │   ├── services/
-│   │   ├── text_extractor.py   # PDF + OCR + metric regex extraction
-│   │   ├── bert_summarizer.py  # BioBERT NER + BART summarization + metric status
+│   │   ├── text_extractor.py   # PDF + OCR + metric regex + scoring-based report type detection
+│   │   ├── bert_summarizer.py  # BioBERT NER + BART summarization + critical threshold detection
+│   │   ├── doctor_service.py   # Report-type → specialist mapping + MongoDB doctor queries
 │   │   ├── rag_engine.py       # Sentence-BERT embedding + FAISS retrieval
 │   │   └── groq_service.py     # Groq LLM chat with RAG context injection
 │   └── utils/
@@ -722,11 +744,19 @@ UPLOAD_FOLDER=uploads
 | POST | `/api/hospital/reports/upload` | Upload report for a patient (AI pipeline) | ✅ receptionist |
 | POST | `/api/hospital/demo/seed` | Seed demo doctor + receptionist accounts | ❌ |
 
+### Doctor Directory
+| Method | Route | Description | Auth |
+|--------|-------|-------------|------|
+| GET | `/api/doctors/` | List all doctors (filter by `?city=` & `?specialization=`) | ❌ |
+| GET | `/api/doctors/<id>` | Get single doctor details | ❌ |
+| POST | `/api/doctors/` | Add a new doctor (admin) | ❌ |
+| DELETE | `/api/doctors/<id>` | Remove a doctor | ❌ |
+
 ---
 
 ## � Database Schema
 
-RAGnosis uses **MongoDB Atlas** with the following 8 collections:
+RAGnosis uses **MongoDB Atlas** with the following 9 collections:
 
 ### 1. **users** — Patient Accounts
 ```json
@@ -870,6 +900,27 @@ RAGnosis uses **MongoDB Atlas** with the following 8 collections:
 }
 ```
 **Indexes**: `user_id`, `created_at`
+
+### 9. **suggested_doctors** — Specialist Doctor Directory
+```json
+{
+  "_id": ObjectId,
+  "name": "Dr. Abhijeet Palshikar",
+  "specialization": "Cardiologist",
+  "qualification": "MD, DM (Cardiology)",
+  "hospital": "Sahyadri Hospital, Bibwewadi",
+  "location": "Bibwewadi",
+  "city": "Pune",
+  "contact": "+91 8806252525",
+  "experience": "18+ years",
+  "rating": 4.8,
+  "consultation_fee": "₹1000",
+  "available_days": "Mon–Sat"
+}
+```
+**Indexes**: `specialization`, `city`  
+**Seeded on startup** with 28 doctors across 12 specializations:  
+Hematologist, Endocrinologist, Diabetologist, Cardiologist, Nephrologist, Hepatologist, Gastroenterologist, Radiologist, Urologist, Orthopedic Surgeon, Dermatologist, Pulmonologist, General Physician
 
 ---
 
