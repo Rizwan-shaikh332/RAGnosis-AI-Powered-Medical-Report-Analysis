@@ -1,0 +1,174 @@
+================================================================================
+QUICK SETUP CHECKLIST - VERCEL + LOCAL BACKEND
+================================================================================
+
+🎯 GOAL: Connect Vercel-hosted frontend to local backend
+
+📋 WHAT I'VE ALREADY DONE FOR YOU:
+✅ Updated frontend/src/main.jsx to use environment variables
+✅ Created frontend/.env.local (for local development)
+✅ Created frontend/.env.production (template for Vercel)
+✅ Updated backend/app.py with proper CORS configuration
+✅ Updated backend/.env.template with new environment variables
+✅ Created VERCEL_LOCAL_BACKEND_SETUP.md (detailed guide)
+
+================================================================================
+NOW YOU NEED TO DO (QUICK VERSION):
+================================================================================
+
+STEP 1: CHOOSE A METHOD
+━━━━━━━━━━━━━━━━━━━━━━
+☐ RECOMMENDED: NGROK TUNNEL (easiest, safest)
+  https://ngrok.com
+
+☐ ALTERNATIVE: LOCAL IP + PORT FORWARDING (more complex)
+
+☐ ALTERNATIVE: CLOUDFLARE TUNNEL (free, permanent URL)
+  https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/
+
+
+STEP 2: SET UP YOUR CHOSEN METHOD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IF USING NGROK:
+───────────────
+1. Download: https://ngrok.com/download
+2. Sign up: https://ngrok.com (free account)
+3. Get auth token: https://dashboard.ngrok.com/auth
+4. Install ngrok and authenticate:
+   ngrok config add-authtoken YOUR_TOKEN
+5. Start backend:
+   cd backend
+   python app.py
+6. In a NEW terminal, expose backend:
+   ngrok http 5000
+7. Copy the URL shown (https://xxxx.ngrok.io)
+   ⚠️  You'll need this for Step 3!
+
+IF USING LOCAL IP:
+──────────────────
+1. Find your IP: ipconfig (Windows) or ifconfig (Mac/Linux)
+2. Set up port forwarding on your router
+3. Get your public IP: https://whatismyipaddress.com
+4. You'll use: http://YOUR_PUBLIC_IP:5000 in Step 3
+
+
+STEP 3: UPDATE VERCEL ENVIRONMENT VARIABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Go to: Vercel Dashboard → Your Project
+2. Click: Settings → Environment Variables
+3. Click: Add New Variable
+4. Fill in:
+   Name: VITE_API_BASE_URL
+   Value: https://xxxx.ngrok.io (or http://YOUR_IP:5000)
+   Environments: Select "Production" (or all)
+5. Click: Save
+6. Go to: Deployments
+7. Click: Redeploy Latest (or redeploy button)
+8. Wait for deployment to finish...
+
+
+STEP 4: TEST IT!
+━━━━━━━━━━━━━━━
+
+1. Open your Vercel app URL in browser
+2. Open DevTools (F12)
+3. Go to Console tab
+4. You should see: 🔗 API Base URL: https://xxxx.ngrok.io
+   ✅ If you see this = Environment variable working!
+
+5. Try logging in or uploading a report
+6. Check Network tab for API requests
+   Should see requests going to your tunnel URL ✅
+
+
+================================================================================
+FILES YOU NEED TO KNOW ABOUT:
+================================================================================
+
+LOCAL DEVELOPMENT:
+  frontend/.env.local
+  ↳ Used when you run: npm run dev
+  ↳ Points to: http://localhost:5000
+
+VERCEL PRODUCTION:
+  Environment Variable in Vercel Dashboard
+  ↳ Set to your ngrok/tunnel URL
+  ↳ Automatically used on Vercel
+
+BACKEND:
+  backend/.env (or backend/.env.template)
+  ↳ Add: VERCEL_FRONTEND_URL=https://your-app.vercel.app
+  ↳ Add: ALLOW_ALL_ORIGINS=false (for production)
+  ↳ Or: ALLOW_ALL_ORIGINS=true (for local dev)
+
+
+================================================================================
+TROUBLESHOOTING:
+================================================================================
+
+❌ CORS Error?
+✅ Solution: Check VITE_API_BASE_URL is set in Vercel
+            Open DevTools → Console → look for "🔗 API Base URL"
+
+❌ Connection Refused?
+✅ Solution: Make sure backend is running (python app.py)
+            Make sure ngrok tunnel is running (ngrok http 5000)
+
+❌ 404 Error?
+✅ Solution: Backend running but route doesn't exist
+            Check backend logs for errors
+
+❌ Timeout?
+✅ Solution: Backend is slow (BART model?)
+            Check backend logs
+            Increase timeout in frontend/vite.config.js
+
+
+================================================================================
+NGROK TIPS:
+================================================================================
+
+⚠️  URL Changes on Restart:
+    Every time you restart ngrok, you get a new URL
+    → Must update VITE_API_BASE_URL in Vercel each time
+    → Pay for ngrok Pro ($5/month) for permanent URL
+    → Or use Cloudflare Tunnel (free, permanent URL)
+
+✅ Keep Terminal Open:
+    ngrok tunnel must keep running while you test
+    Close terminal = tunnel stops working
+
+✅ Test Direct Connection:
+    Open browser: https://xxxx.ngrok.io/api/health
+    Should see: {"status": "ok"}
+    If you see this = backend is accessible ✅
+
+
+================================================================================
+FOR LONG-TERM (BEYOND LOCAL BACKEND):
+================================================================================
+
+When ready to deploy backend to production:
+  1. Deploy backend to: Railway, Render, AWS, etc.
+  2. Update Vercel VITE_API_BASE_URL to production backend URL
+  3. Update backend VERCEL_FRONTEND_URL if needed
+  4. No need for ngrok anymore ✅
+
+See: DESCRIPTION.txt for deployment recommendations
+
+
+================================================================================
+QUICK LINKS:
+================================================================================
+
+Vercel Dashboard: https://vercel.com/dashboard
+ngrok: https://ngrok.com
+Cloudflare Tunnel: https://developers.cloudflare.com/cloudflare-one/
+LocalTunnel (alternative): https://localtunnel.me
+
+Detailed Guide: See VERCEL_LOCAL_BACKEND_SETUP.md in this folder
+
+
+✨ You're all set! Follow the steps above and you'll be running in 5 minutes! ✨

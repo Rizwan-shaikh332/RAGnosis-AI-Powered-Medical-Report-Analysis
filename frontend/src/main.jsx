@@ -7,7 +7,12 @@ import App from './App.jsx'
 import './index.css'
 
 // Configure axios to use backend API
-axios.defaults.baseURL = 'http://localhost:5000'
+// Use environment variable, fallback to localhost for development
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+axios.defaults.baseURL = API_BASE_URL
+
+// For debugging (remove in production)
+console.log('🔗 API Base URL:', API_BASE_URL)
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

@@ -10,9 +10,29 @@ def create_app():
     # Create upload folder
     os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
 
-    # CORS - Allow all origins for development
+    # CORS - Configure allowed origins
+    allowed_origins = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5000",
+    ]
+    
+    # Add frontend URLs from environment variables
+    if os.getenv("FRONTEND_URL"):
+        allowed_origins.append(os.getenv("FRONTEND_URL"))
+    
+    # Add Vercel frontend domain (you'll set this in production)
+    # Example: https://your-app.vercel.app
+    if os.getenv("VERCEL_FRONTEND_URL"):
+        allowed_origins.append(os.getenv("VERCEL_FRONTEND_URL"))
+    
+    # For local development, allow requests from any local IP
+    if os.getenv("ALLOW_ALL_ORIGINS") == "true":
+        allowed_origins = "*"
+    
     CORS(app,
-         origins=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "*"],
+         origins=allowed_origins,
          supports_credentials=True,
          allow_headers=["Content-Type", "Authorization"],
          methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"])
@@ -22,6 +42,7 @@ def create_app():
     def log_request():
         print(f"\n[REQUEST] {request.method} {request.path}")
         print(f"[REQUEST] From: {request.remote_addr}")
+        print(f"[REQUEST] Origin: {request.headers.get('Origin', 'None')}")
         print(f"[REQUEST] Headers: Content-Type={request.content_type}, Auth={request.headers.get('Authorization', 'None')}")
 
     # Register blueprints

@@ -282,15 +282,15 @@ function parseSummaryForMetrics(text) {
 function normaliseMetrics(raw) {
     if (!raw) return {}
     const m = { ...raw }
-    if (m.wbc && m.wbc > 100)          m.wbc        = +(m.wbc / 1000).toFixed(2)
+    if (m.wbc && m.wbc > 100) m.wbc = +(m.wbc / 1000).toFixed(2)
     if (m.platelets) {
-        if (m.platelets < 10)           m.platelets  = +(m.platelets * 100).toFixed(1)
-        else if (m.platelets > 1000)    m.platelets  = +(m.platelets / 1000).toFixed(1)
+        if (m.platelets < 10) m.platelets = +(m.platelets * 100).toFixed(1)
+        else if (m.platelets > 1000) m.platelets = +(m.platelets / 1000).toFixed(1)
     }
-    if (m.rbc && m.rbc > 20)           m.rbc        = +(m.rbc / 1_000_000).toFixed(2)
-    if (m.mch && m.mch > 100)          m.mch        = +(m.mch / 100).toFixed(1)
-    if (m.mchc && m.mchc > 100)        m.mchc       = +(m.mchc / 10).toFixed(1)
-    if (m.mcv && m.mcv > 200)          m.mcv        = +(m.mcv / 10).toFixed(1)
+    if (m.rbc && m.rbc > 20) m.rbc = +(m.rbc / 1_000_000).toFixed(2)
+    if (m.mch && m.mch > 100) m.mch = +(m.mch / 100).toFixed(1)
+    if (m.mchc && m.mchc > 100) m.mchc = +(m.mchc / 10).toFixed(1)
+    if (m.mcv && m.mcv > 200) m.mcv = +(m.mcv / 10).toFixed(1)
     if (m.haematocrit && m.haematocrit < 1) m.haematocrit = +(m.haematocrit * 100).toFixed(1)
     return m
 }
@@ -324,8 +324,8 @@ function ReportDetailView({ report, onBack }) {
 
     // 4. Split by status
     const elevated = recs.filter(r => r.status === 'high')
-    const lowVals  = recs.filter(r => r.status === 'low')
-    const normal   = recs.filter(r => r.status === 'normal')
+    const lowVals = recs.filter(r => r.status === 'low')
+    const normal = recs.filter(r => r.status === 'normal')
     const abnormal = [...elevated, ...lowVals]
 
     // 5. Table rows
@@ -372,13 +372,13 @@ function ReportDetailView({ report, onBack }) {
                     </div>
 
                     {report.is_critical && (
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            style={{ 
-                                background: 'rgba(239, 68, 68, 0.1)', 
-                                border: '2px solid #ef4444', 
-                                padding: '10px 20px', 
+                            style={{
+                                background: 'rgba(239, 68, 68, 0.1)',
+                                border: '2px solid #ef4444',
+                                padding: '10px 20px',
                                 borderRadius: 12,
                                 display: 'flex',
                                 alignItems: 'center',
@@ -542,9 +542,9 @@ function ReportDetailView({ report, onBack }) {
                     <h3 style={{ fontWeight: 700, marginBottom: 14, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
                         🩺 Recommended Specialists for Consultation
                         {report.is_critical && (
-                            <span style={{ 
-                                background: 'rgba(239,68,68,0.15)', color: '#ef4444', 
-                                padding: '3px 10px', borderRadius: 99, fontSize: '0.72rem', 
+                            <span style={{
+                                background: 'rgba(239,68,68,0.15)', color: '#ef4444',
+                                padding: '3px 10px', borderRadius: 99, fontSize: '0.72rem',
                                 fontWeight: 700, border: '1px solid #ef444440',
                                 animation: 'pulsate 1.5s infinite'
                             }}>URGENT</span>
@@ -553,7 +553,7 @@ function ReportDetailView({ report, onBack }) {
 
                     {/* Specialist Advice */}
                     {report.specialist_advice && (
-                        <div style={{ 
+                        <div style={{
                             padding: '14px 18px', marginBottom: 16,
                             background: report.is_critical ? 'rgba(239, 68, 68, 0.08)' : 'rgba(0, 212, 170, 0.06)',
                             borderRadius: 12,
@@ -573,10 +573,10 @@ function ReportDetailView({ report, onBack }) {
                             <thead>
                                 <tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid var(--border)' }}>
                                     {['Doctor', 'Specialization', 'Hospital', 'Experience', 'Fee', 'Contact'].map(h => (
-                                        <th key={h} style={{ 
-                                            padding: '12px 16px', textAlign: 'left', fontWeight: 700, 
-                                            color: 'var(--text-muted)', fontSize: '0.75rem', 
-                                            textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' 
+                                        <th key={h} style={{
+                                            padding: '12px 16px', textAlign: 'left', fontWeight: 700,
+                                            color: 'var(--text-muted)', fontSize: '0.75rem',
+                                            textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap'
                                         }}>{h}</th>
                                     ))}
                                 </tr>
@@ -587,14 +587,14 @@ function ReportDetailView({ report, onBack }) {
                                         borderBottom: i < report.suggested_doctors.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                                         transition: 'background 0.2s',
                                     }}
-                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(0, 212, 170, 0.04)'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(0, 212, 170, 0.04)'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                     >
                                         <td style={{ padding: '14px 16px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                <div style={{ 
+                                                <div style={{
                                                     width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                                                    background: 'rgba(0, 212, 170, 0.1)', 
+                                                    background: 'rgba(0, 212, 170, 0.1)',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                     fontSize: '1rem', border: '1px solid rgba(0, 212, 170, 0.2)'
                                                 }}>👨‍⚕️</div>
@@ -607,11 +607,11 @@ function ReportDetailView({ report, onBack }) {
                                             </div>
                                         </td>
                                         <td style={{ padding: '14px 16px' }}>
-                                            <span style={{ 
-                                                display: 'inline-block', padding: '3px 10px', borderRadius: 99, 
+                                            <span style={{
+                                                display: 'inline-block', padding: '3px 10px', borderRadius: 99,
                                                 fontSize: '0.72rem', fontWeight: 700,
-                                                background: 'rgba(0, 212, 170, 0.1)', color: 'var(--accent-cyan)', 
-                                                border: '1px solid rgba(0, 212, 170, 0.25)' 
+                                                background: 'rgba(0, 212, 170, 0.1)', color: 'var(--accent-cyan)',
+                                                border: '1px solid rgba(0, 212, 170, 0.25)'
                                             }}>{doc.specialization}</span>
                                         </td>
                                         <td style={{ padding: '14px 16px', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
@@ -625,9 +625,9 @@ function ReportDetailView({ report, onBack }) {
                                             {doc.consultation_fee || '—'}
                                         </td>
                                         <td style={{ padding: '14px 16px' }}>
-                                            <button 
+                                            <button
                                                 className="btn-primary"
-                                                style={{ 
+                                                style={{
                                                     padding: '6px 14px', fontSize: '0.75rem', height: 'auto',
                                                     display: 'inline-flex', alignItems: 'center', gap: 6,
                                                     whiteSpace: 'nowrap'
@@ -663,11 +663,11 @@ function ReportDetailView({ report, onBack }) {
 // ── Sidebar items ──
 const NAV = [
     { key: 'overview', icon: '🏠', label: 'Overview' },
-    { key: 'health', icon: '💚', label: 'Health Card' },
+    // { key: 'health', icon: '💚', label: 'Health Card' },
     { key: 'upload', icon: '📤', label: 'Upload Report' },
     { key: 'reports', icon: '📋', label: 'My Reports' },
     { key: 'metrics', icon: '📊', label: 'Health Metrics' },
-    { key: 'reminders', icon: '💊', label: 'Medicine Reminders' },
+    // { key: 'reminders', icon: '💊', label: 'Medicine Reminders' },
     { key: 'prescriptions', icon: '🩺', label: 'Prescriptions' },
     { key: 'chatbot', icon: '🤖', label: 'AI Chatbot' },
     { key: 'profile', icon: '👤', label: 'My Profile' },
@@ -706,20 +706,20 @@ function PrescriptionsTab() {
                 {prescriptions.map(px => {
                     const isExpanded = expandedId === px._id
                     const medicineCount = (px.medicines || []).length
-                    
+
                     return (
-                        <motion.div 
-                            key={px._id} 
-                            initial={{ opacity: 0, y: 12 }} 
+                        <motion.div
+                            key={px._id}
+                            initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
-                            style={{ 
-                                background: 'var(--bg-card)', 
-                                border: '1px solid var(--border)', 
-                                borderRadius: 16, 
+                            style={{
+                                background: 'var(--bg-card)',
+                                border: '1px solid var(--border)',
+                                borderRadius: 16,
                                 overflow: 'hidden',
                                 transition: 'all 0.3s ease'
                             }}>
-                            
+
                             {/* Header - Always Visible */}
                             <div
                                 onClick={() => setExpandedId(isExpanded ? null : px._id)}
@@ -788,8 +788,8 @@ function PrescriptionsTab() {
                                             {/* Medicines List */}
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
                                                 {(px.medicines || []).map((m, i) => (
-                                                    <div 
-                                                        key={i} 
+                                                    <div
+                                                        key={i}
                                                         style={{
                                                             padding: '16px',
                                                             background: 'var(--bg-primary)',
